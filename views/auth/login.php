@@ -270,5 +270,20 @@ function switchLoginRole(role) {
 document.addEventListener('DOMContentLoaded', function() {
     generateCaptcha();
     switchLoginRole('admin');
+
+    // Tự động điền captcha mẫu để demo thuận tiện nhất
+    document.getElementById('captchaInput').value = currentCaptcha;
+
+    // Validate captcha trước khi submit
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const userInput = document.getElementById('captchaInput').value.trim().toUpperCase();
+        if (userInput !== currentCaptcha) {
+            e.preventDefault();
+            alert('Mã xác nhận Captcha không chính xác! Vui lòng nhập lại.');
+            generateCaptcha();
+            document.getElementById('captchaInput').value = '';
+            document.getElementById('captchaInput').focus();
+        }
+    });
 });
 </script>
