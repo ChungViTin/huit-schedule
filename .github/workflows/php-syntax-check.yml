@@ -1,0 +1,30 @@
+name: PHP Syntax Check (CI)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  php-lint:
+    name: Lint PHP Files (php -l)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Check PHP Syntax (php -l)
+        run: |
+          echo "Scanning all PHP files for syntax errors..."
+          find . -type f -name "*.php" ! -path "./vendor/*" -exec php -l {} +
