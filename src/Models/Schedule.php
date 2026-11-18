@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Core\Model;
-use App\Services\ScheduleOptimizerService;
 use PDO;
 
 class Schedule extends Model
@@ -30,16 +29,6 @@ class Schedule extends Model
             $params[] = $filters['teacher_id'];
         }
 
-        if (!empty($filters['class_type'])) {
-            $sql .= " AND s.class_type = ?";
-            $params[] = $filters['class_type'];
-        }
-
-        if (!empty($filters['session_time'])) {
-            $sql .= " AND s.session_time = ?";
-            $params[] = $filters['session_time'];
-        }
-
         if (!empty($filters['day_of_week'])) {
             $sql .= " AND s.day_of_week = ?";
             $params[] = $filters['day_of_week'];
@@ -53,7 +42,7 @@ class Schedule extends Model
             $params[] = $keyword;
         }
 
-        $sql .= " ORDER BY s.day_of_week ASC, s.period_start ASC, s.room ASC";
+        $sql .= " ORDER BY s.day_of_week ASC, s.shift_or_periods ASC, s.room ASC";
 
         $stmt = self::db()->prepare($sql);
         $stmt->execute($params);
@@ -76,17 +65,11 @@ class Schedule extends Model
 
     public static function create(array $data): int
     {
-        $shift = $data['shift_or_periods'];
-        $shiftInfo = ScheduleOptimizerService::SHIFTS[$shift] ?? null;
-
-        $sessionTime = $shiftInfo['session'] ?? self::detectSessionTime($shift);
-        $classType = $data['class_type'] ?? ($shiftInfo['type'] ?? 'theory');
-        $start = $data['period_start'] ?? ($shiftInfo['start'] ?? 1);
-        $end = $data['period_end'] ?? ($shiftInfo['end'] ?? 3);
+        $sessionTime = self::detectSessionTime($data['shift_or_periods']);
 
         $stmt = self::db()->prepare("INSERT INTO schedules 
-            (teacher_id, branch_id, subject_name, room, day_of_week, shift_or_periods, class_type, period_start, period_end, session_time, notes) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            (teacher_id, branch_id, subject_name, room, day_of_week, shift_or_periods, session_time, notes) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         
         $stmt->execute([
             $data['teacher_id'],
@@ -94,10 +77,7 @@ class Schedule extends Model
             $data['subject_name'],
             $data['room'],
             $data['day_of_week'],
-            $shift,
-            $classType,
-            $start,
-            $end,
+            $data['shift_or_periods'],
             $sessionTime,
             $data['notes'] ?? null
         ]);
@@ -107,13 +87,7 @@ class Schedule extends Model
 
     public static function update(int $id, array $data): bool
     {
-        $shift = $data['shift_or_periods'];
-        $shiftInfo = ScheduleOptimizerService::SHIFTS[$shift] ?? null;
-
-        $sessionTime = $shiftInfo['session'] ?? self::detectSessionTime($shift);
-        $classType = $data['class_type'] ?? ($shiftInfo['type'] ?? 'theory');
-        $start = $data['period_start'] ?? ($shiftInfo['start'] ?? 1);
-        $end = $data['period_end'] ?? ($shiftInfo['end'] ?? 3);
+        $sessionTime = self::detectSessionTime($data['shift_or_periods']);
 
         $stmt = self::db()->prepare("UPDATE schedules SET 
             teacher_id = ?, 
@@ -122,9 +96,6 @@ class Schedule extends Model
             room = ?, 
             day_of_week = ?, 
             shift_or_periods = ?, 
-            class_type = ?,
-            period_start = ?,
-            period_end = ?,
             session_time = ?, 
             notes = ? 
             WHERE id = ?");
@@ -135,10 +106,7 @@ class Schedule extends Model
             $data['subject_name'],
             $data['room'],
             $data['day_of_week'],
-            $shift,
-            $classType,
-            $start,
-            $end,
+            $data['shift_or_periods'],
             $sessionTime,
             $data['notes'] ?? null,
             $id
@@ -157,7 +125,7 @@ class Schedule extends Model
                                      FROM schedules s 
                                      JOIN branches b ON s.branch_id = b.id 
                                      WHERE s.teacher_id = ? 
-                                     ORDER BY s.day_of_week ASC, s.period_start ASC");
+                                     ORDER BY s.day_of_week ASC, s.shift_or_periods ASC");
         $stmt->execute([$teacherId]);
         return $stmt->fetchAll();
     }
@@ -168,7 +136,7 @@ class Schedule extends Model
                                      FROM schedules s 
                                      JOIN teachers t ON s.teacher_id = t.id 
                                      WHERE s.branch_id = ? 
-                                     ORDER BY s.day_of_week ASC, s.period_start ASC");
+                                     ORDER BY s.day_of_week ASC, s.shift_or_periods ASC");
         $stmt->execute([$branchId]);
         return $stmt->fetchAll();
     }
@@ -180,10 +148,13 @@ class Schedule extends Model
 
     public static function detectSessionTime(string $shift): string
     {
-        if (stripos($shift, 'Sáng') !== false) {
+        if (isset(\App\Services\ScheduleOptimizerService::SHIFTS[$shift]['session'])) {
+            return \App\Services\ScheduleOptimizerService::SHIFTS[$shift]['session'];
+        }
+        if (stripos($shift, 'Sáng') !== false || stripos($shift, 'Tiết 1') !== false || stripos($shift, 'Tiết 4') !== false) {
             return 'morning';
         }
-        if (stripos($shift, 'Chiều') !== false) {
+        if (stripos($shift, 'Chiều') !== false || stripos($shift, 'Tiết 7') !== false || stripos($shift, 'Tiết 10') !== false) {
             return 'afternoon';
         }
         return 'evening';

@@ -24,7 +24,7 @@ class TeacherPortalController extends Controller
         $timetableGrid = [];
         for ($day = 2; $day <= 8; $day++) {
             foreach ($shifts as $shift) {
-                $timetableGrid[$day][$shift] = null;
+                $timetableGrid[$day][$shift] = [];
             }
         }
 
@@ -35,7 +35,10 @@ class TeacherPortalController extends Controller
         foreach ($schedules as $s) {
             $day = (int)$s['day_of_week'];
             $shift = $s['shift_or_periods'];
-            $timetableGrid[$day][$shift] = $s;
+            if (!isset($timetableGrid[$day][$shift])) {
+                $timetableGrid[$day][$shift] = [];
+            }
+            $timetableGrid[$day][$shift][] = $s;
             $schedulesByDay[$day][] = $s;
         }
 

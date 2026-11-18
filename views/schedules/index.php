@@ -39,7 +39,7 @@ $shiftDetails = \App\Services\ScheduleOptimizerService::SHIFTS;
 
     <!-- Filters Bar -->
     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-        <form method="GET" action="/schedules" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
+        <form method="GET" action="/schedules" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
             
             <!-- Search Keyword -->
             <div>
@@ -77,16 +77,6 @@ $shiftDetails = \App\Services\ScheduleOptimizerService::SHIFTS;
                             <?= htmlspecialchars($t['full_name']) ?>
                         </option>
                     <?php endforeach; ?>
-                </select>
-            </div>
-
-            <!-- Filter Class Type -->
-            <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Loại ca học</label>
-                <select name="class_type" class="w-full py-2 px-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-huit-header">
-                    <option value="">-- Tất cả loại hình --</option>
-                    <option value="theory" <?= ($filters['class_type'] ?? '') === 'theory' ? 'selected' : '' ?>>📘 Lý thuyết (3 tiết)</option>
-                    <option value="practice" <?= ($filters['class_type'] ?? '') === 'practice' ? 'selected' : '' ?>>🧪 Thực hành (5 tiết)</option>
                 </select>
             </div>
 
@@ -246,20 +236,28 @@ $shiftDetails = \App\Services\ScheduleOptimizerService::SHIFTS;
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Ca học / Tiết học <span class="text-red-500">*</span></label>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Ca học <span class="text-red-500">*</span></label>
                         <select id="modal_shift" name="shift_or_periods" required class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-huit-header">
-                            <option value="">-- Chọn Ca Học --</option>
-                            <optgroup label="📘 Lý thuyết (3 tiết)">
-                                <option value="Sáng - Lý thuyết (Tiết 1-3)">Sáng - Lý thuyết (Tiết 1-3) [07:00 - 09:30]</option>
-                                <option value="Sáng - Lý thuyết (Tiết 4-6)">Sáng - Lý thuyết (Tiết 4-6) [09:45 - 12:15]</option>
-                                <option value="Chiều - Lý thuyết (Tiết 7-9)">Chiều - Lý thuyết (Tiết 7-9) [13:00 - 15:30]</option>
-                                <option value="Chiều - Lý thuyết (Tiết 10-12)">Chiều - Lý thuyết (Tiết 10-12) [15:45 - 18:15]</option>
-                                <option value="Tối - Lý thuyết (Tiết 13-15)">Tối - Lý thuyết (Tiết 13-15) [18:30 - 21:00]</option>
+                            <option value="">-- Chọn Loại Ca Học --</option>
+                            <optgroup label="📚 LÝ THUYẾT (3 TIẾT / CA)">
+                                <?php foreach ($shifts as $sh): 
+                                    $info = $shiftDetails[$sh] ?? null;
+                                    if (($info['type'] ?? '') === 'theory'):
+                                ?>
+                                    <option value="<?= htmlspecialchars($sh) ?>">
+                                        <?= htmlspecialchars($sh) ?> (<?= $info['time'] ?>)
+                                    </option>
+                                <?php endif; endforeach; ?>
                             </optgroup>
-                            <optgroup label="🧪 Thực hành phòng máy / xưởng (5 tiết)">
-                                <option value="Sáng - Thực hành (Tiết 1-5)">Sáng - Thực hành (Tiết 1-5) [07:00 - 11:30]</option>
-                                <option value="Chiều - Thực hành (Tiết 7-11)">Chiều - Thực hành (Tiết 7-11) [12:30 - 17:00]</option>
-                                <option value="Tối - Thực hành (Tiết 11-15)">Tối - Thực hành (Tiết 11-15) [17:15 - 21:45]</option>
+                            <optgroup label="💻 THỰC HÀNH (5 TIẾT / CA)">
+                                <?php foreach ($shifts as $sh): 
+                                    $info = $shiftDetails[$sh] ?? null;
+                                    if (($info['type'] ?? '') === 'practice'):
+                                ?>
+                                    <option value="<?= htmlspecialchars($sh) ?>">
+                                        <?= htmlspecialchars($sh) ?> (<?= $info['time'] ?>)
+                                    </option>
+                                <?php endif; endforeach; ?>
                             </optgroup>
                         </select>
                     </div>
@@ -357,19 +355,28 @@ $shiftDetails = \App\Services\ScheduleOptimizerService::SHIFTS;
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Ca học / Tiết học <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Ca học <span class="text-red-500">*</span></label>
                     <select id="edit_shift" name="shift_or_periods" required class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-huit-header">
-                        <optgroup label="📘 Lý thuyết (3 tiết)">
-                            <option value="Sáng - Lý thuyết (Tiết 1-3)">Sáng - Lý thuyết (Tiết 1-3) [07:00 - 09:30]</option>
-                            <option value="Sáng - Lý thuyết (Tiết 4-6)">Sáng - Lý thuyết (Tiết 4-6) [09:45 - 12:15]</option>
-                            <option value="Chiều - Lý thuyết (Tiết 7-9)">Chiều - Lý thuyết (Tiết 7-9) [13:00 - 15:30]</option>
-                            <option value="Chiều - Lý thuyết (Tiết 10-12)">Chiều - Lý thuyết (Tiết 10-12) [15:45 - 18:15]</option>
-                            <option value="Tối - Lý thuyết (Tiết 13-15)">Tối - Lý thuyết (Tiết 13-15) [18:30 - 21:00]</option>
+                        <option value="">-- Chọn Loại Ca Học --</option>
+                        <optgroup label="📚 LÝ THUYẾT (3 TIẾT / CA)">
+                            <?php foreach ($shifts as $sh): 
+                                $info = $shiftDetails[$sh] ?? null;
+                                if (($info['type'] ?? '') === 'theory'):
+                            ?>
+                                <option value="<?= htmlspecialchars($sh) ?>">
+                                    <?= htmlspecialchars($sh) ?> (<?= $info['time'] ?>)
+                                </option>
+                            <?php endif; endforeach; ?>
                         </optgroup>
-                        <optgroup label="🧪 Thực hành phòng máy / xưởng (5 tiết)">
-                            <option value="Sáng - Thực hành (Tiết 1-5)">Sáng - Thực hành (Tiết 1-5) [07:00 - 11:30]</option>
-                            <option value="Chiều - Thực hành (Tiết 7-11)">Chiều - Thực hành (Tiết 7-11) [12:30 - 17:00]</option>
-                            <option value="Tối - Thực hành (Tiết 11-15)">Tối - Thực hành (Tiết 11-15) [17:15 - 21:45]</option>
+                        <optgroup label="💻 THỰC HÀNH (5 TIẾT / CA)">
+                            <?php foreach ($shifts as $sh): 
+                                $info = $shiftDetails[$sh] ?? null;
+                                if (($info['type'] ?? '') === 'practice'):
+                            ?>
+                                <option value="<?= htmlspecialchars($sh) ?>">
+                                    <?= htmlspecialchars($sh) ?> (<?= $info['time'] ?>)
+                                </option>
+                            <?php endif; endforeach; ?>
                         </optgroup>
                     </select>
                 </div>
