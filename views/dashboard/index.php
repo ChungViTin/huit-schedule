@@ -104,6 +104,89 @@ $pageTitle = 'Trang Chủ Tổng Quan & Sơ Đồ Phân Bổ - HUIT Schedule Hub
 
     </div>
 
+    <!-- 2.5. THANH COMBO BOX BỘ LỌC DỮ LIỆU ĐA CHIỀU (CHUẨN HUIT) -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <form method="GET" action="/dashboard" id="dashboardFilterForm" class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-huit-header flex items-center justify-center text-lg flex-shrink-0">
+                    <i class="ti ti-adjustments-horizontal"></i>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-slate-800 flex items-center space-x-1.5">
+                        <span>Bộ Lọc Dữ Liệu & Phân Tích Thông Minh</span>
+                        <span class="text-[10px] font-semibold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200">
+                            Hiển thị: <?= $totalSchedules ?> ca
+                        </span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Tự động cập nhật các biểu đồ và danh sách phân bổ theo tiêu chí</p>
+                </div>
+            </div>
+
+            <!-- Các Combo Box lọc -->
+            <div class="flex flex-wrap items-center gap-2.5">
+                
+                <!-- Combo Box 1: Học kỳ / Năm học (chuẩn HUIT Ảnh 2) -->
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-[11px] font-bold text-slate-500 whitespace-nowrap"><i class="ti ti-school mr-0.5 text-slate-400"></i>Học kỳ:</span>
+                    <select name="semester" onchange="this.form.submit()" class="text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-huit-header cursor-pointer shadow-xs hover:border-slate-300 transition">
+                        <option value="HK2_2026_2027" <?= $selectedSemester === 'HK2_2026_2027' ? 'selected' : '' ?>>HK2 (2026 - 2027)</option>
+                        <option value="HK1_2026_2027" <?= $selectedSemester === 'HK1_2026_2027' ? 'selected' : '' ?>>HK1 (2026 - 2027)</option>
+                        <option value="HK_HE_2026_2027" <?= $selectedSemester === 'HK_HE_2026_2027' ? 'selected' : '' ?>>HK Hè (2026 - 2027)</option>
+                    </select>
+                </div>
+
+                <!-- Combo Box 2: Cơ sở đào tạo -->
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-[11px] font-bold text-slate-500 whitespace-nowrap"><i class="ti ti-building mr-0.5 text-slate-400"></i>Cơ sở:</span>
+                    <select name="branch_id" onchange="this.form.submit()" class="text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-huit-header cursor-pointer shadow-xs hover:border-slate-300 transition max-w-[210px] truncate">
+                        <option value="">-- Tất cả cơ sở --</option>
+                        <?php foreach ($branches as $b): ?>
+                            <option value="<?= $b['id'] ?>" <?= $selectedBranchId == $b['id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($b['branch_name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Combo Box 3: Loại hình đào tạo (Lý thuyết / Thực hành) -->
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-[11px] font-bold text-slate-500 whitespace-nowrap"><i class="ti ti-category mr-0.5 text-slate-400"></i>Loại ca:</span>
+                    <select name="type" onchange="this.form.submit()" class="text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-huit-header cursor-pointer shadow-xs hover:border-slate-300 transition">
+                        <option value="">-- Tất cả loại hình --</option>
+                        <option value="theory" <?= $selectedType === 'theory' ? 'selected' : '' ?>>📚 Lý thuyết (3 tiết)</option>
+                        <option value="practice" <?= $selectedType === 'practice' ? 'selected' : '' ?>>💻 Thực hành (5 tiết)</option>
+                    </select>
+                </div>
+
+                <!-- Combo Box 4: Thứ trong tuần -->
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-[11px] font-bold text-slate-500 whitespace-nowrap"><i class="ti ti-calendar-time mr-0.5 text-slate-400"></i>Thứ:</span>
+                    <select name="day_of_week" onchange="this.form.submit()" class="text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-huit-header cursor-pointer shadow-xs hover:border-slate-300 transition">
+                        <option value="">-- Tất cả các ngày --</option>
+                        <option value="2" <?= $selectedDay === 2 ? 'selected' : '' ?>>Thứ 2</option>
+                        <option value="3" <?= $selectedDay === 3 ? 'selected' : '' ?>>Thứ 3</option>
+                        <option value="4" <?= $selectedDay === 4 ? 'selected' : '' ?>>Thứ 4</option>
+                        <option value="5" <?= $selectedDay === 5 ? 'selected' : '' ?>>Thứ 5</option>
+                        <option value="6" <?= $selectedDay === 6 ? 'selected' : '' ?>>Thứ 6</option>
+                        <option value="7" <?= $selectedDay === 7 ? 'selected' : '' ?>>Thứ 7</option>
+                        <option value="8" <?= $selectedDay === 8 ? 'selected' : '' ?>>Chủ nhật</option>
+                    </select>
+                </div>
+
+                <!-- Nút Làm Mới / Bỏ lọc nếu có tham số -->
+                <?php if ($selectedBranchId || $selectedType || $selectedDay || ($selectedSemester && $selectedSemester !== 'HK2_2026_2027')): ?>
+                    <a href="/dashboard" class="inline-flex items-center space-x-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition shadow-xs" title="Khôi phục mặc định">
+                        <i class="ti ti-rotate"></i>
+                        <span>Bỏ lọc</span>
+                    </a>
+                <?php endif; ?>
+
+            </div>
+
+        </form>
+    </div>
+
     <!-- 3. CÁC SƠ ĐỒ VÀ BIỂU ĐỒ PHÂN BỔ THÔNG MINH (CHARTS SECTION) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 

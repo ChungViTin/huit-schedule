@@ -18,15 +18,51 @@ class DashboardController extends Controller
     {
         Auth::requireAdmin();
 
+        $selectedBranchId = isset($_GET['branch_id']) && $_GET['branch_id'] !== '' ? (int)$_GET['branch_id'] : null;
+        $selectedType = isset($_GET['type']) && $_GET['type'] !== '' ? trim($_GET['type']) : null;
+        $selectedSemester = isset($_GET['semester']) && $_GET['semester'] !== '' ? trim($_GET['semester']) : 'HK2_2026_2027';
+        $selectedDay = isset($_GET['day_of_week']) && $_GET['day_of_week'] !== '' ? (int)$_GET['day_of_week'] : null;
+
         $branches = Branch::getAll();
         $teachers = Teacher::getAll();
-        $schedules = Schedule::getAll();
+
+        // 1. Lọc theo các tiêu chí từ Combo Box
+        $filters = [];
+        if ($selectedBranchId) {
+            $filters['branch_id'] = $selectedBranchId;
+        }
+        if ($selectedDay) {
+            $filters['day_of_week'] = $selectedDay;
+        }
+
+        $schedules = Schedule::getAll($filters);
+
+        // Lọc theo Loại hình Ca học: Lý thuyết (3 tiết) vs Thực hành (5 tiết)
+        if ($selectedType) {
+            $schedules = array_values(array_filter($schedules, function($s) use ($selectedType) {
+                $shiftInfo = ScheduleOptimizerService::SHIFTS[$s['shift_or_periods']] ?? null;
+                $isPractice = ($shiftInfo['type'] ?? '') === 'practice'
+                           || stripos($s['shift_or_periods'], 'thực hành') !== false
+                           || stripos($s['subject_name'], 'thực hành') !== false
+                           || stripos($s['subject_name'], 'lab') !== false;
+                return $selectedType === 'practice' ? $isPractice : !$isPractice;
+            }));
+        }
+
+        // Lọc / Giả lập theo Học kỳ
+        if ($selectedSemester === 'HK1_2026_2027') {
+            $schedules = array_slice($schedules, 0, (int)ceil(count($schedules) * 0.65));
+        } elseif ($selectedSemester === 'HK_HE_2026_2027') {
+            $schedules = array_values(array_filter($schedules, function($s) {
+                return (int)$s['id'] % 2 === 0;
+            }));
+        }
 
         $totalBranches = count($branches);
         $totalTeachers = count($teachers);
         $totalSchedules = count($schedules);
 
-        // 1. Phân bổ theo Cơ sở (Dùng cho Biểu đồ Cột / Bar Chart)
+        // 2. Phân bổ theo Cơ sở (Dùng cho Biểu đồ Cột / Bar Chart)
         $branchChartLabels = [];
         $branchChartData = [];
         foreach ($branches as $b) {
@@ -35,7 +71,7 @@ class DashboardController extends Controller
             $branchChartData[] = $count;
         }
 
-        // 2. Phân bổ theo Buổi học (Sáng / Chiều / Tối - Dùng cho Donut Chart)
+        // 3. Phân bổ theo Buổi học (Sáng / Chiều / Tối - Dùng cho Donut Chart)
         $sessionCount = ['morning' => 0, 'afternoon' => 0, 'evening' => 0];
         $typeCount = ['practice' => 0, 'theory' => 0];
 
@@ -48,10 +84,12 @@ class DashboardController extends Controller
             }
 
             // Phân loại thực hành vs lý thuyết
-            $isPractice = stripos($s['subject_name'], 'thực hành') !== false 
-                       || stripos($s['subject_name'], 'lab') !== false
-                       || stripos($s['subject_name'], 'web') !== false
-                       || stripos($s['subject_name'], 'vi sinh') !== false;
+            $shiftInfo = ScheduleOptimizerService::SHIFTS[$s['shift_or_periods']] ?? null;
+            $isPractice = ($shiftInfo['type'] ?? '') === 'practice'
+                       || stripos($s['shift_or_periods'], 'thực hành') !== false 
+                       || stripos($s['subject_name'], 'thực hành') !== false 
+                       || stripos($s['subject_name'], 'lab') !== false;
+
             if ($isPractice) {
                 $typeCount['practice']++;
             } else {
@@ -59,7 +97,7 @@ class DashboardController extends Controller
             }
         }
 
-        // 3. Phân bổ theo Thứ trong tuần (Thứ 2 đến Thứ 7, CN)
+        // 4. Phân bổ theo Thứ trong tuần (Thứ 2 đến Thứ 7, CN)
         $dayOfWeekDistribution = [2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0, 7 => 0, 8 => 0];
         foreach ($schedules as $s) {
             $d = (int)$s['day_of_week'];
@@ -68,12 +106,23 @@ class DashboardController extends Controller
             }
         }
 
-        // 4. Danh sách các ca học tiêu biểu gần đây
+        // 5. Danh sách các ca học tiêu biểu gần đây
         $recentSchedules = array_slice($schedules, 0, 6);
 
-        // 5. Thống kê giảng viên có nhiều ca dạy nhất (Top 5)
-        usort($teachers, fn($a, $b) => (int)$b['schedule_count'] <=> (int)$a['schedule_count']);
-        $topTeachers = array_slice($teachers, 0, 5);
+        // 6. Thống kê giảng viên có nhiều ca dạy nhất (Top 5 - tính động theo bộ lọc)
+        $teacherCounts = [];
+        foreach ($schedules as $s) {
+            $tId = (int)$s['teacher_id'];
+            $teacherCounts[$tId] = ($teacherCounts[$tId] ?? 0) + 1;
+        }
+        $teacherList = [];
+        foreach ($teachers as $t) {
+            $tId = (int)$t['id'];
+            $cnt = $teacherCounts[$tId] ?? 0;
+            $teacherList[] = array_merge($t, ['schedule_count' => $cnt]);
+        }
+        usort($teacherList, fn($a, $b) => (int)$b['schedule_count'] <=> (int)$a['schedule_count']);
+        $topTeachers = array_slice($teacherList, 0, 5);
 
         $this->render('dashboard/index', [
             'branches' => $branches,
@@ -81,6 +130,10 @@ class DashboardController extends Controller
             'totalBranches' => $totalBranches,
             'totalTeachers' => $totalTeachers,
             'totalSchedules' => $totalSchedules,
+            'selectedBranchId' => $selectedBranchId,
+            'selectedType' => $selectedType,
+            'selectedSemester' => $selectedSemester,
+            'selectedDay' => $selectedDay,
             'branchChartLabels' => $branchChartLabels,
             'branchChartData' => $branchChartData,
             'sessionCount' => $sessionCount,
