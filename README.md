@@ -20,21 +20,26 @@
   - 🚗 **Lưu ý di chuyển:** Cảnh báo khi giảng viên có ca khác buổi tại cơ sở khác.
   - ⚠️ **Nguy hiểm:** Cảnh báo đỏ nếu xếp 2 ca liền kề trong cùng buổi ở 2 cơ sở cách xa nhau.
 
-### 2. ⚡ Kiểm tra xung đột thời gian thực (Real-time Conflict Checker)
+### 2. ⚡ Kiểm tra xung đột thời gian thực & Phân loại ca học chuẩn HUIT
+- **Phân loại 2 loại hình ca học:**
+  - 📚 **Lý thuyết (3 tiết/ca):** Ca 1 (Tiết 1-3), Ca 2 (Tiết 4-6), Ca 3 (Tiết 7-9), Ca 4 (Tiết 10-12), Ca 5 (Tiết 13-15).
+  - 💻 **Thực hành (5 tiết/ca):** Ca Sáng (Tiết 1-5), Ca Chiều (Tiết 7-11).
+- **Thuật toán phát hiện xung đột giao khoảng tiết học (Period Overlap):** Ngăn chặn triệt để tình trạng trùng phòng hoặc trùng giảng viên giữa ca 3 tiết và ca 5 tiết có thời gian giao nhau trong cùng buổi.
 - Kiểm tra trùng phòng học tại cùng cơ sở và ca học.
 - Kiểm tra trùng lịch giảng viên trên phạm vi toàn trường.
 - Hiển thị phản hồi trực tiếp ngay trên giao diện tạo lịch bằng AJAX trước khi người dùng bấm Lưu.
 
 ### 3. 👨‍🏫 Cổng thông tin Giảng viên (Teacher Portal)
 - Cổng tra cứu riêng biệt đăng nhập bằng email giảng viên.
-- Chế độ xem ma trận Thời khóa biểu theo Tuần hoặc danh sách Timeline.
+- Chế độ xem ma trận Thời khóa biểu theo Tuần chuẩn màu HUIT hoặc danh sách Timeline.
 - Nắm bắt chính xác **Cơ sở trường học**, **Địa chỉ cụ thể** và **Phòng học**.
 - Cảnh báo trực quan nếu trong ngày có lịch dạy tại nhiều cơ sở khác nhau.
 
-### 4. 📊 Dashboard quản trị & Bộ lọc ma trận TKB
-- Ma trận thời khóa biểu tuần từ Thứ 2 đến Chủ nhật x 5 Ca học tiêu chuẩn HUIT.
-- Lọc nhanh theo từng Cơ sở hoặc từng Giảng viên.
-- Biểu đồ phân bổ tỷ lệ khối lượng tiết dạy theo các cơ sở.
+### 4. 📊 Dashboard quản trị, Sơ đồ phân tích & Bộ lọc đa chiều
+- **Thanh Combo Box bộ lọc đa chiều:** Lọc theo Học kỳ (`HK2 2026-2027`, `HK1`, `HK Hè`), Cơ sở đào tạo, Loại hình ca học (Lý thuyết / Thực hành), và Thứ trong tuần. Tự động cập nhật tức thì tất cả biểu đồ và số liệu.
+- **Biểu đồ trực quan:** Sơ đồ Cột phân bổ theo Cơ sở, Donut Chart phân bổ theo Buổi học, Line Chart mật độ theo Thứ trong tuần.
+- **Ma trận TKB Tuần:** Giao diện chuẩn HUIT với phân định Sáng / Chiều / Tối, thẻ Thực hành màu xanh lá đậm (`#59ba47`), thẻ Lý thuyết màu xám xanh (`#ebf3fa`), chú thích màu sắc 5 trạng thái.
+- **Pop-up Modals tương tác:** Toàn bộ thao tác Thêm mới, Chỉnh sửa, và Xác nhận Xóa đều được thực hiện qua Pop-up Modal mượt mà, không gián đoạn luồng làm việc.
 - CRUD đầy đủ cho Cơ sở, Giảng viên và Lịch giảng dạy.
 
 ---
