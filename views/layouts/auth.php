@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($pageTitle ?? 'Đăng nhập - HUIT Schedule Hub') ?></title>
+    <title><?= htmlspecialchars($pageTitle ?? 'Đăng nhập - Cổng Thông Tin HUIT') ?></title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,10 +12,11 @@
                 extend: {
                     colors: {
                         huit: {
-                            blue: '#003366',
-                            dark: '#002244',
-                            orange: '#EA580C',
-                            light: '#F0F4F8'
+                            blue: '#0054A6',
+                            header: '#005BAA',
+                            orange: '#FF6600',
+                            orangeHover: '#E65C00',
+                            light: '#F4F7FA'
                         }
                     }
                 }
@@ -30,42 +31,53 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-huit-blue to-slate-900 text-slate-800 min-h-screen flex items-center justify-center p-4">
+<body class="bg-[#EFF2F6] text-slate-800 min-h-screen flex flex-col justify-between">
 
-    <div class="w-full max-w-md">
-        <!-- Logo & Header -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-huit-orange shadow-lg shadow-orange-500/30 mb-3">
-                <i class="ti ti-calendar-stats text-3xl text-white"></i>
+    <!-- Header theo chuẩn Cổng HUIT -->
+    <header class="bg-huit-header text-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <!-- HUIT Emblemed Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center p-1 shadow-sm">
+                        <svg class="w-10 h-10 text-huit-header" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-2xl font-black tracking-wider text-white">HUIT</span>
+                            <span class="text-[10px] leading-tight text-blue-100 hidden sm:inline-block border-l border-blue-400 pl-2">
+                                HO CHI MINH CITY UNIVERSITY OF<br>INDUSTRY AND TRADE
+                            </span>
+                        </div>
+                        <div class="text-xs uppercase tracking-widest text-blue-100 font-medium">
+                            BỘ CÔNG THƯƠNG &bull; TRƯỜNG ĐẠI HỌC CÔNG THƯƠNG TP. HỒ CHÍ MINH
+                        </div>
+                    </div>
+                </div>
             </div>
-            <h1 class="text-2xl font-bold text-white tracking-tight">HUIT Schedule Hub</h1>
-            <p class="text-sm text-slate-300 mt-1">Trường Đại học Công Thương TP. Hồ Chí Minh</p>
+
+            <div class="hidden md:flex items-center space-x-4 text-xs text-blue-100">
+                <span class="flex items-center"><i class="ti ti-phone mr-1"></i> (028) 3816 1673</span>
+                <span class="flex items-center"><i class="ti ti-mail mr-1"></i> huit@huit.edu.vn</span>
+            </div>
         </div>
+    </header>
 
-        <!-- Flash messages -->
-        <?php if (!empty($_SESSION['flash_error'])): ?>
-            <div class="p-4 mb-4 text-sm text-red-200 rounded-xl bg-red-950/60 border border-red-500/30 flex items-center space-x-2 backdrop-blur-sm">
-                <i class="ti ti-alert-triangle text-xl text-red-400 flex-shrink-0"></i>
-                <div><?= $_SESSION['flash_error'] ?></div>
-            </div>
-            <?php unset($_SESSION['flash_error']); ?>
-        <?php endif; ?>
+    <!-- Main Container Layout (2 Cột giống hệt Cổng thông tin HUIT thực tế) -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <?= $content ?>
+    </main>
 
-        <?php if (!empty($_SESSION['flash_success'])): ?>
-            <div class="p-4 mb-4 text-sm text-emerald-200 rounded-xl bg-emerald-950/60 border border-emerald-500/30 flex items-center space-x-2 backdrop-blur-sm">
-                <i class="ti ti-circle-check text-xl text-emerald-400 flex-shrink-0"></i>
-                <div><?= $_SESSION['flash_success'] ?></div>
-            </div>
-            <?php unset($_SESSION['flash_success']); ?>
-        <?php endif; ?>
-
-        <!-- Card Container -->
-        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-white/20">
-            <?= $content ?>
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-6">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="font-semibold text-slate-700">TRƯỜNG ĐẠI HỌC CÔNG THƯƠNG TP. HỒ CHÍ MINH (HUIT)</p>
+            <p class="text-slate-500 mt-0.5">Địa chỉ: 140 Lê Trọng Tấn, P. Tây Thạnh, Q. Tân Phú, TP. Hồ Chí Minh &bull; Hệ thống Quản lý và Phân lịch Giảng dạy Đa cơ sở</p>
         </div>
-
-        <p class="text-center text-xs text-slate-400 mt-6">&copy; 2026 HUIT Schedule Hub &bull; Giấy phép MIT</p>
-    </div>
+    </footer>
 
 </body>
 </html>
