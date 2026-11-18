@@ -36,6 +36,9 @@ $router->get('/logout', [AuthController::class, 'logout']);
 
 // Admin Dashboard & Schedules
 $router->get('/dashboard', [DashboardController::class, 'index']);
+$router->get('/timetable', [DashboardController::class, 'weekly']);
+$router->get('/weekly-schedule', [DashboardController::class, 'weekly']);
+$router->get('/schedules/weekly', [DashboardController::class, 'weekly']);
 
 // Schedules CRUD
 $router->get('/schedules', [ScheduleController::class, 'index']);

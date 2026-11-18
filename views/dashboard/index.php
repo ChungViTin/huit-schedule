@@ -1,262 +1,359 @@
 <?php
-$pageTitle = 'Lịch học, lịch dạy theo tuần - HUIT Schedule Hub';
-
-$dayNames = [
-    2 => ['name' => 'Thứ 2', 'date' => '16/11/2026'],
-    3 => ['name' => 'Thứ 3', 'date' => '17/11/2026'],
-    4 => ['name' => 'Thứ 4', 'date' => '18/11/2026'],
-    5 => ['name' => 'Thứ 5', 'date' => '19/11/2026'],
-    6 => ['name' => 'Thứ 6', 'date' => '20/11/2026'],
-    7 => ['name' => 'Thứ 7', 'date' => '21/11/2026'],
-    8 => ['name' => 'Chủ nhật', 'date' => '22/11/2026']
-];
-
-// Nhóm các ca học thành 3 buổi: Sáng, Chiều, Tối (như trong Ảnh 3)
-$sessions = [
-    'Sáng' => [
-        'Ca 1: Sáng (Tiết 1-3)',
-        'Ca 2: Sáng (Tiết 4-6)'
-    ],
-    'Chiều' => [
-        'Ca 3: Chiều (Tiết 7-9)',
-        'Ca 4: Chiều (Tiết 10-12)'
-    ],
-    'Tối' => [
-        'Ca 5: Tối (Tiết 13-15)'
-    ]
-];
+$pageTitle = 'Trang Chủ Tổng Quan & Sơ Đồ Phân Bổ - HUIT Schedule Hub';
 ?>
 
-<div class="space-y-5">
+<div class="space-y-6">
 
-    <!-- Thanh Toolbar Bộ lọc & Điều hướng chuẩn Ảnh 3 -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-        
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+    <!-- 1. HEADER PROFILE & KPI WIDGET (MÔ PHỎNG CHUẨN ẢNH 2) -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
             
-            <!-- Tiêu đề + Radio filter (Ảnh 3) -->
-            <div class="flex flex-wrap items-center gap-4">
-                <h1 class="text-base font-bold text-slate-800 tracking-tight flex items-center space-x-2">
-                    <span>Lịch học, lịch thi theo tuần</span>
-                </h1>
-
-                <!-- Radio buttons -->
-                <div class="flex items-center space-x-3 text-xs text-slate-600 font-medium">
-                    <label class="flex items-center space-x-1 cursor-pointer">
-                        <input type="radio" name="schedule_type" checked class="text-huit-header focus:ring-huit-header">
-                        <span>Tất cả</span>
-                    </label>
-                    <label class="flex items-center space-x-1 cursor-pointer">
-                        <input type="radio" name="schedule_type" class="text-huit-header focus:ring-huit-header">
-                        <span>Lịch học</span>
-                    </label>
-                    <label class="flex items-center space-x-1 cursor-pointer">
-                        <input type="radio" name="schedule_type" class="text-huit-header focus:ring-huit-header">
-                        <span>Lịch thi</span>
-                    </label>
+            <!-- Avatar & Thông tin cán bộ quản trị -->
+            <div class="lg:col-span-6 flex items-start sm:items-center space-x-4">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-huit-header to-sky-600 text-white flex items-center justify-center font-black text-2xl sm:text-3xl shadow-md flex-shrink-0">
+                    <?= mb_substr($user['full_name'] ?? 'A', 0, 1) ?>
+                </div>
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <h1 class="text-base sm:text-lg font-extrabold text-slate-800">
+                            <?= htmlspecialchars($user['full_name'] ?? 'Quản Trị Viên Đào Tạo') ?>
+                        </h1>
+                        <span class="bg-orange-100 text-orange-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-orange-200">
+                            HUIT Admin
+                        </span>
+                    </div>
+                    <div class="text-xs text-slate-500 space-y-0.5">
+                        <p><span class="font-medium text-slate-700">Đơn vị:</span> Phòng Đào Tạo &bull; Trường ĐH Công Thương TP.HCM</p>
+                        <p><span class="font-medium text-slate-700">Hệ thống:</span> Quản lý & Phân lịch giảng dạy đa cơ sở thông minh</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Các nút điều hướng tuần (Ảnh 3) -->
-            <div class="flex flex-wrap items-center gap-2 text-xs">
-                
-                <div class="relative">
-                    <input type="text" value="18/11/2026" readonly class="w-24 text-center py-1.5 px-2 bg-slate-50 border border-slate-300 rounded-lg font-medium text-slate-700">
+            <!-- Mini KPI Stats Box (Ảnh 2) -->
+            <div class="lg:col-span-6 grid grid-cols-3 gap-3 text-center">
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Lịch Trong Tuần</span>
+                    <span class="text-xl sm:text-2xl font-black text-huit-header"><?= $totalSchedules ?></span>
+                    <span class="text-[10px] text-slate-500 block">ca học</span>
                 </div>
-
-                <button type="button" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-lg shadow-xs flex items-center space-x-1 transition">
-                    <i class="ti ti-calendar"></i>
-                    <span>Hiện tại</span>
-                </button>
-
-                <button type="button" onclick="window.print()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-lg shadow-xs flex items-center space-x-1 transition">
-                    <i class="ti ti-printer"></i>
-                    <span>In lịch</span>
-                </button>
-
-                <div class="inline-flex rounded-lg shadow-xs">
-                    <button type="button" class="px-2.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-l-lg border-r border-sky-500 transition">
-                        &lt; Trở về
-                    </button>
-                    <button type="button" class="px-2.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-r-lg transition">
-                        Tiếp &gt;
-                    </button>
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Giảng Viên</span>
+                    <span class="text-xl sm:text-2xl font-black text-emerald-600"><?= $totalTeachers ?></span>
+                    <span class="text-[10px] text-slate-500 block">thầy/cô</span>
                 </div>
-
-                <a href="/schedules/create" class="px-3 py-1.5 bg-huit-orange hover:bg-huit-orangeHover text-white font-bold rounded-lg shadow-xs transition flex items-center space-x-1">
-                    <i class="ti ti-plus"></i>
-                    <span>Thêm lịch mới</span>
-                </a>
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Cơ Sở Hoạt Động</span>
+                    <span class="text-xl sm:text-2xl font-black text-orange-600"><?= $totalBranches ?></span>
+                    <span class="text-[10px] text-slate-500 block">cơ sở</span>
+                </div>
             </div>
 
         </div>
+    </div>
 
-        <!-- Bộ Lọc Nhanh Cơ Sở & Giảng Viên (Đề Bài) -->
-        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <form method="GET" action="/dashboard" class="flex flex-wrap items-center gap-2">
-                <span class="font-bold text-slate-600"><i class="ti ti-filter mr-1 text-huit-header"></i>Bộ lọc đa cơ sở:</span>
-                
-                <select name="branch_id" onchange="this.form.submit()" class="py-1 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:ring-1 focus:ring-huit-header font-medium">
-                    <option value="">-- Tất cả cơ sở đào tạo --</option>
-                    <?php foreach ($branches as $b): ?>
-                        <option value="<?= $b['id'] ?>" <?= $selectedBranchId === (int)$b['id'] ? 'selected' : '' ?>>
+    <!-- 2. QUICK SHORTCUT ICONS BAR (CHUẨN ẢNH 2) -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        
+        <a href="/timetable" class="bg-white p-3.5 rounded-xl border border-slate-200 hover:border-huit-header hover:shadow-sm transition flex flex-col items-center text-center group">
+            <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 group-hover:scale-110 transition-transform flex items-center justify-center text-xl mb-2">
+                <i class="ti ti-calendar"></i>
+            </div>
+            <span class="text-xs font-bold text-slate-700 group-hover:text-huit-header">Lịch Theo Tuần</span>
+            <span class="text-[10px] text-slate-400">Xem ma trận TKB</span>
+        </a>
+
+        <a href="/schedules/create" class="bg-white p-3.5 rounded-xl border border-slate-200 hover:border-orange-500 hover:shadow-sm transition flex flex-col items-center text-center group">
+            <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 group-hover:scale-110 transition-transform flex items-center justify-center text-xl mb-2">
+                <i class="ti ti-sparkles"></i>
+            </div>
+            <span class="text-xs font-bold text-slate-700 group-hover:text-orange-600">Phân Lịch Thông Minh</span>
+            <span class="text-[10px] text-slate-400">Gợi ý AI & Chống trùng</span>
+        </a>
+
+        <a href="/schedules" class="bg-white p-3.5 rounded-xl border border-slate-200 hover:border-huit-header hover:shadow-sm transition flex flex-col items-center text-center group">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-huit-header group-hover:scale-110 transition-transform flex items-center justify-center text-xl mb-2">
+                <i class="ti ti-list-details"></i>
+            </div>
+            <span class="text-xs font-bold text-slate-700 group-hover:text-huit-header">Quản Lý Lịch Dạy</span>
+            <span class="text-[10px] text-slate-400">Danh sách CRUD</span>
+        </a>
+
+        <a href="/teachers" class="bg-white p-3.5 rounded-xl border border-slate-200 hover:border-emerald-600 hover:shadow-sm transition flex flex-col items-center text-center group">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 group-hover:scale-110 transition-transform flex items-center justify-center text-xl mb-2">
+                <i class="ti ti-users"></i>
+            </div>
+            <span class="text-xs font-bold text-slate-700 group-hover:text-emerald-600">Hồ Sơ Giảng Viên</span>
+            <span class="text-[10px] text-slate-400">12 Thầy/Cô</span>
+        </a>
+
+        <a href="/branches" class="bg-white p-3.5 rounded-xl border border-slate-200 hover:border-purple-600 hover:shadow-sm transition flex flex-col items-center text-center group">
+            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 group-hover:scale-110 transition-transform flex items-center justify-center text-xl mb-2">
+                <i class="ti ti-building-community"></i>
+            </div>
+            <span class="text-xs font-bold text-slate-700 group-hover:text-purple-600">Cơ Sở Đào Tạo</span>
+            <span class="text-[10px] text-slate-400">4 Cơ sở HUIT</span>
+        </a>
+
+        <a href="/portal" target="_blank" class="bg-white p-3.5 rounded-xl border border-slate-200 hover:border-teal-600 hover:shadow-sm transition flex flex-col items-center text-center group">
+            <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 group-hover:scale-110 transition-transform flex items-center justify-center text-xl mb-2">
+                <i class="ti ti-school"></i>
+            </div>
+            <span class="text-xs font-bold text-slate-700 group-hover:text-teal-600">Cổng Giảng Viên</span>
+            <span class="text-[10px] text-slate-400">Tra cứu cá nhân</span>
+        </a>
+
+    </div>
+
+    <!-- 3. CÁC SƠ ĐỒ VÀ BIỂU ĐỒ PHÂN BỔ THÔNG MINH (CHARTS SECTION) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- SƠ ĐỒ 1: Biểu đồ Cột phân bổ Lịch dạy theo từng Cơ sở (7 Cột) -->
+        <div class="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                            <i class="ti ti-chart-bar text-huit-header"></i>
+                            <span>Sơ Đồ Phân Bổ Lịch Dạy Theo Cơ Sở</span>
+                        </h2>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Tối ưu hóa thời gian di chuyển và mức độ hoạt động tại các cơ sở</p>
+                    </div>
+                    <span class="text-xs font-bold px-2 py-0.5 bg-blue-50 text-huit-header rounded-full border border-blue-200">
+                        4 Cơ sở
+                    </span>
+                </div>
+
+                <div class="h-64 relative">
+                    <canvas id="branchChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Tóm tắt số liệu các cơ sở -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 pt-3 border-t border-slate-100 text-center">
+                <?php foreach ($branches as $idx => $b): 
+                    $count = $branchChartData[$idx] ?? 0;
+                    $percent = $totalSchedules > 0 ? round(($count / $totalSchedules) * 100) : 0;
+                ?>
+                    <div class="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                        <span class="text-[10px] text-slate-500 font-medium truncate block" title="<?= htmlspecialchars($b['branch_name']) ?>">
                             <?= htmlspecialchars($b['branch_name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                        </span>
+                        <span class="text-xs font-bold text-huit-header block mt-0.5"><?= $count ?> ca (<?= $percent ?>%)</span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
 
-                <select name="teacher_id" onchange="this.form.submit()" class="py-1 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:ring-1 focus:ring-huit-header font-medium">
-                    <option value="">-- Tất cả giảng viên --</option>
-                    <?php foreach ($teachers as $t): ?>
-                        <option value="<?= $t['id'] ?>" <?= $selectedTeacherId === (int)$t['id'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($t['full_name']) ?> (<?= htmlspecialchars($t['expertise']) ?>)
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+        <!-- SƠ ĐỒ 2: Donut Chart - Tỷ lệ Buổi học & Loại hình học tập (5 Cột) -->
+        <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                            <i class="ti ti-chart-donut text-emerald-600"></i>
+                            <span>Tỷ Lệ Phân Bổ Ca Học</span>
+                        </h2>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Tỷ lệ theo buổi (Sáng/Chiều/Tối) & Thực hành</p>
+                    </div>
+                    <span class="text-xs font-bold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">
+                        <?= $totalSchedules ?> Ca
+                    </span>
+                </div>
 
-                <?php if ($selectedBranchId || $selectedTeacherId): ?>
-                    <a href="/dashboard" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition">
-                        <i class="ti ti-x"></i> Bỏ lọc
-                    </a>
-                <?php endif; ?>
-            </form>
+                <div class="h-56 relative flex items-center justify-center">
+                    <canvas id="sessionDonutChart"></canvas>
+                </div>
+            </div>
 
-            <div class="text-slate-500">
-                Tổng cộng: <strong class="text-huit-header"><?= $totalSchedules ?></strong> ca lịch phân bổ
+            <div class="mt-4 pt-3 border-t border-slate-100 space-y-2 text-xs">
+                <div class="flex items-center justify-between text-slate-600">
+                    <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-sky-500 mr-2"></span>Ca Sáng (07:00 - 12:15):</span>
+                    <strong class="text-slate-800"><?= $sessionCount['morning'] ?> ca</strong>
+                </div>
+                <div class="flex items-center justify-between text-slate-600">
+                    <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-500 mr-2"></span>Ca Chiều (13:00 - 18:15):</span>
+                    <strong class="text-slate-800"><?= $sessionCount['afternoon'] ?> ca</strong>
+                </div>
+                <div class="flex items-center justify-between text-slate-600">
+                    <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-orange-500 mr-2"></span>Ca Tối (18:30 - 21:00):</span>
+                    <strong class="text-slate-800"><?= $sessionCount['evening'] ?> ca</strong>
+                </div>
             </div>
         </div>
 
     </div>
 
-    <!-- MA TRẬN THỜI KHÓA BIỂU TUẦN CHUẨN THEO ẢNH 3 -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full border-collapse min-w-[1050px] text-xs">
-                <thead>
-                    <tr class="bg-blue-50/70 border-b border-slate-200 text-slate-700">
-                        <th class="p-3 text-center w-24 font-bold border-r border-slate-200 text-sky-800">
-                            Ca học
-                        </th>
-                        <?php for ($day = 2; $day <= 8; $day++): ?>
-                            <th class="p-2.5 text-center font-bold border-r border-slate-200 w-40 <?= $day === 8 ? 'text-red-600' : 'text-sky-900' ?>">
-                                <div><?= $dayNames[$day]['name'] ?></div>
-                                <div class="text-[11px] font-normal text-slate-500 mt-0.5"><?= $dayNames[$day]['date'] ?></div>
-                            </th>
-                        <?php endfor; ?>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-200">
-                    
-                    <?php foreach ($sessions as $sessionName => $sessionShifts): ?>
-                        <tr>
-                            <!-- Cột Ca Học: Sáng / Chiều / Tối (Ảnh 3) -->
-                            <td class="p-4 bg-slate-50/90 border-r border-slate-200 text-center font-bold text-slate-800 align-middle">
-                                <div class="text-sm font-extrabold text-slate-700"><?= $sessionName ?></div>
-                            </td>
+    <!-- 4. HÀNG SƠ ĐỒ THỨ 2: Mật độ các ngày trong tuần & Top Giảng viên -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                            <!-- Các ô Thứ 2 -> Chủ Nhật -->
-                            <?php for ($day = 2; $day <= 8; $day++): 
-                                // Gom toàn bộ lịch dạy của buổi này trong ngày
-                                $sessionSchedules = [];
-                                foreach ($sessionShifts as $sh) {
-                                    if (!empty($timetableGrid[$day][$sh])) {
-                                        foreach ($timetableGrid[$day][$sh] as $item) {
-                                            $sessionSchedules[] = $item;
-                                        }
-                                    }
-                                }
-                            ?>
-                                <td class="p-2 border-r border-slate-200 align-top min-w-[145px] h-36 bg-white hover:bg-slate-50/30 transition">
-                                    
-                                    <?php if (empty($sessionSchedules)): ?>
-                                        <div class="h-full flex items-center justify-center text-slate-200 text-[11px] select-none">
-                                            &bull;
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="space-y-2">
-                                            <?php foreach ($sessionSchedules as $sch): 
-                                                // Phân biệt màu sắc: Thực hành (Xanh lá) vs Lý thuyết (Xanh dương/Pastel) theo Ảnh 3
-                                                $isPractice = stripos($sch['subject_name'], 'thực hành') !== false 
-                                                           || stripos($sch['subject_name'], 'lab') !== false
-                                                           || stripos($sch['subject_name'], 'web') !== false
-                                                           || stripos($sch['subject_name'], 'vi sinh') !== false;
+        <!-- SƠ ĐỒ 3: Biểu đồ đường mật độ các ngày trong tuần -->
+        <div class="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <div>
+                    <h2 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                        <i class="ti ti-chart-line text-sky-600"></i>
+                        <span>Mật Độ Phân Bổ Lịch Dạy Theo Ngày Trong Tuần</span>
+                    </h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Số ca học được xếp từ Thứ 2 đến Chủ nhật</p>
+                </div>
+                <a href="/timetable" class="text-xs text-huit-header font-bold hover:underline flex items-center">
+                    <span>Xem TKB Tuần</span>
+                    <i class="ti ti-arrow-right ml-1"></i>
+                </a>
+            </div>
 
-                                                if ($isPractice) {
-                                                    // Khối xanh lá HUIT (như trong Ảnh 3 môn Big Data, NoSQL)
-                                                    $cardBg = 'bg-[#66BB6A] text-white shadow-xs';
-                                                    $subText = 'text-green-50';
-                                                    $roomBg = 'bg-white/20 text-white';
-                                                } else {
-                                                    // Khối lý thuyết pastel (như trong Ảnh 3 môn IoT)
-                                                    $cardBg = 'bg-[#EBF3FA] text-slate-800 border border-blue-200 shadow-xs';
-                                                    $subText = 'text-slate-600';
-                                                    $roomBg = 'bg-blue-100 text-huit-header font-bold';
-                                                }
-                                            ?>
-                                                <div class="p-2.5 rounded-lg <?= $cardBg ?> transition group relative leading-tight">
-                                                    
-                                                    <!-- Tên môn học -->
-                                                    <div class="font-bold text-xs line-clamp-2">
-                                                        <?= htmlspecialchars($sch['subject_name']) ?>
-                                                    </div>
-
-                                                    <!-- Mã lớp & Tiết học -->
-                                                    <div class="text-[10px] <?= $subText ?> mt-1 font-mono">
-                                                        <?= htmlspecialchars($sch['shift_or_periods']) ?>
-                                                    </div>
-
-                                                    <!-- Phòng & Cơ sở -->
-                                                    <div class="text-[10px] <?= $subText ?> mt-1 font-medium">
-                                                        Phòng: <span class="font-bold"><?= htmlspecialchars($sch['room']) ?></span>
-                                                    </div>
-
-                                                    <div class="text-[9px] <?= $subText ?> truncate mt-0.5" title="<?= htmlspecialchars($sch['branch_name']) ?> - <?= htmlspecialchars($sch['branch_address']) ?>">
-                                                        <?= htmlspecialchars($sch['branch_name']) ?>
-                                                    </div>
-
-                                                    <!-- Tên Giảng Viên -->
-                                                    <div class="text-[10px] <?= $subText ?> font-semibold mt-1 pt-1 border-t border-white/20">
-                                                        GV: <?= htmlspecialchars($sch['teacher_name']) ?>
-                                                    </div>
-
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    <?php endif; ?>
-
-                                </td>
-                            <?php endfor; ?>
-                        </tr>
-                    <?php endforeach; ?>
-
-                </tbody>
-            </table>
+            <div class="h-60 relative">
+                <canvas id="dayOfWeekChart"></canvas>
+            </div>
         </div>
 
-        <!-- Chú thích màu sắc (Legend bar dưới chân bảng như trong Ảnh 3) -->
-        <div class="p-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-600">
-            <div class="flex items-center space-x-1.5">
-                <span class="w-4 h-3 rounded bg-[#EBF3FA] border border-blue-200 inline-block"></span>
-                <span>Lịch học lý thuyết</span>
+        <!-- BẢNG TOP GIẢNG VIÊN CÓ NHIỀU TIẾT DẠY NHẤT -->
+        <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
+                    <h2 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                        <i class="ti ti-trophy text-amber-500"></i>
+                        <span>Giảng Viên Phân Công Nhiều Nhất</span>
+                    </h2>
+                    <a href="/teachers" class="text-xs text-slate-400 hover:text-huit-header">Tất cả</a>
+                </div>
+
+                <div class="divide-y divide-slate-100">
+                    <?php foreach ($topTeachers as $idx => $t): ?>
+                        <div class="py-2.5 flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                                    <?= $idx + 1 ?>
+                                </span>
+                                <div>
+                                    <div class="font-bold text-xs text-slate-800"><?= htmlspecialchars($t['full_name']) ?></div>
+                                    <div class="text-[10px] text-slate-400"><?= htmlspecialchars($t['expertise']) ?></div>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-huit-header border border-blue-200">
+                                <?= (int)$t['schedule_count'] ?> ca dạy
+                            </span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
             </div>
-            <div class="flex items-center space-x-1.5">
-                <span class="w-4 h-3 rounded bg-[#66BB6A] inline-block"></span>
-                <span>Lịch học thực hành</span>
-            </div>
-            <div class="flex items-center space-x-1.5">
-                <span class="w-4 h-3 rounded bg-[#81D4FA] inline-block"></span>
-                <span>Lịch học trực tuyến</span>
-            </div>
-            <div class="flex items-center space-x-1.5">
-                <span class="w-4 h-3 rounded bg-[#FFF59D] inline-block"></span>
-                <span>Lịch thi</span>
-            </div>
-            <div class="flex items-center space-x-1.5">
-                <span class="w-4 h-3 rounded bg-[#EF5350] inline-block"></span>
-                <span>Lịch tạm ngưng</span>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 text-center">
+                <a href="/schedules/create" class="inline-flex items-center justify-center space-x-1.5 w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 rounded-xl transition">
+                    <i class="ti ti-plus text-huit-header"></i>
+                    <span>Tiếp Tục Phân Lịch Mới</span>
+                </a>
             </div>
         </div>
 
     </div>
 
 </div>
+
+<!-- SCRIPT VẼ CHARTS BẰNG CHART.JS -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // 1. Sơ đồ Cột: Phân bổ theo Cơ sở
+    const ctxBranch = document.getElementById('branchChart').getContext('2d');
+    new Chart(ctxBranch, {
+        type: 'bar',
+        data: {
+            labels: <?= json_encode($branchChartLabels, JSON_UNESCAPED_UNICODE) ?>,
+            datasets: [{
+                label: 'Số ca lịch dạy',
+                data: <?= json_encode($branchChartData) ?>,
+                backgroundColor: [
+                    'rgba(0, 84, 166, 0.85)',
+                    'rgba(16, 185, 129, 0.85)',
+                    'rgba(147, 51, 234, 0.85)',
+                    'rgba(245, 158, 11, 0.85)'
+                ],
+                borderRadius: 8,
+                barThickness: 32
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 2 }
+                }
+            }
+        }
+    });
+
+    // 2. Sơ đồ Donut: Phân bổ theo Buổi học
+    const ctxSession = document.getElementById('sessionDonutChart').getContext('2d');
+    new Chart(ctxSession, {
+        type: 'doughnut',
+        data: {
+            labels: ['Ca Sáng', 'Ca Chiều', 'Ca Tối'],
+            datasets: [{
+                data: [
+                    <?= (int)$sessionCount['morning'] ?>,
+                    <?= (int)$sessionCount['afternoon'] ?>,
+                    <?= (int)$sessionCount['evening'] ?>
+                ],
+                backgroundColor: ['#0284C7', '#10B981', '#F97316'],
+                borderWidth: 3,
+                borderColor: '#FFFFFF',
+                cutout: '68%'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // 3. Sơ đồ Line: Mật độ theo các ngày trong tuần
+    const ctxDay = document.getElementById('dayOfWeekChart').getContext('2d');
+    new Chart(ctxDay, {
+        type: 'line',
+        data: {
+            labels: ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'],
+            datasets: [{
+                label: 'Số ca học',
+                data: [
+                    <?= (int)$dayOfWeekDistribution[2] ?>,
+                    <?= (int)$dayOfWeekDistribution[3] ?>,
+                    <?= (int)$dayOfWeekDistribution[4] ?>,
+                    <?= (int)$dayOfWeekDistribution[5] ?>,
+                    <?= (int)$dayOfWeekDistribution[6] ?>,
+                    <?= (int)$dayOfWeekDistribution[7] ?>,
+                    <?= (int)$dayOfWeekDistribution[8] ?>
+                ],
+                borderColor: '#0284C7',
+                backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                tension: 0.35,
+                fill: true,
+                pointBackgroundColor: '#0284C7',
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+
+});
+</script>

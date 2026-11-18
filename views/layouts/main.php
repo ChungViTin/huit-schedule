@@ -1,6 +1,7 @@
 <?php
 use App\Core\Auth;
 $user = Auth::user();
+$currentUri = $_SERVER['REQUEST_URI'];
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -27,10 +28,12 @@ $user = Auth::user();
             }
         }
     </script>
+    <!-- Chart.js for beautiful charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Font & Tabler Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -124,43 +127,38 @@ $user = Auth::user();
                     DANH MỤC HỆ THỐNG
                 </div>
 
-                <!-- 1. Trang chủ -->
-                <a href="/dashboard" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition <?= str_contains($_SERVER['REQUEST_URI'], '/dashboard') ? 'bg-blue-50 text-huit-header border-l-4 border-huit-header' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
-                    <i class="ti ti-home text-base"></i>
-                    <span>TRANG CHỦ</span>
+                <!-- 1. Trang chủ (Dashboard Thống kê & Sơ đồ) -->
+                <a href="/dashboard" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition <?= ($currentUri === '/dashboard' || $currentUri === '/') ? 'bg-blue-50 text-huit-header border-l-4 border-huit-header' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
+                    <i class="ti ti-layout-dashboard text-base text-huit-header"></i>
+                    <span>TRANG CHỦ (SƠ ĐỒ)</span>
                 </a>
 
-                <!-- 2. Quản lý phân lịch (Accordion) -->
-                <div>
-                    <div class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer">
-                        <div class="flex items-center space-x-2.5">
-                            <i class="ti ti-calendar-stats text-base text-huit-header"></i>
-                            <span>QUẢN LÝ PHÂN LỊCH</span>
-                        </div>
-                        <i class="ti ti-chevron-down text-xs text-slate-400"></i>
-                    </div>
-                    
-                    <div class="pl-8 pr-2 py-1 space-y-1 text-xs font-medium">
-                        <a href="/dashboard" class="block py-1.5 px-2 rounded-lg text-slate-600 hover:text-huit-header hover:bg-slate-50 transition <?= str_contains($_SERVER['REQUEST_URI'], '/dashboard') ? 'text-huit-header font-bold' : '' ?>">
-                            &bull; Lịch học theo tuần
-                        </a>
-                        <a href="/schedules/create" class="block py-1.5 px-2 rounded-lg text-orange-600 font-bold hover:bg-orange-50 transition <?= str_contains($_SERVER['REQUEST_URI'], '/schedules/create') ? 'bg-orange-50' : '' ?>">
-                            &bull; Phân lịch thông minh
-                        </a>
-                        <a href="/schedules" class="block py-1.5 px-2 rounded-lg text-slate-600 hover:text-huit-header hover:bg-slate-50 transition <?= str_contains($_SERVER['REQUEST_URI'], '/schedules') && !str_contains($_SERVER['REQUEST_URI'], '/schedules/create') ? 'text-huit-header font-bold' : '' ?>">
-                            &bull; Danh sách lịch giảng dạy
-                        </a>
-                    </div>
-                </div>
+                <!-- 2. Lịch học theo tuần (Trang riêng biệt chuẩn Ảnh 3) -->
+                <a href="/timetable" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition <?= str_contains($currentUri, '/timetable') || str_contains($currentUri, '/weekly') ? 'bg-blue-50 text-huit-header border-l-4 border-huit-header' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
+                    <i class="ti ti-calendar-event text-base text-sky-600"></i>
+                    <span>LỊCH HỌC THEO TUẦN</span>
+                </a>
 
-                <!-- 3. Quản lý Giảng viên -->
-                <a href="/teachers" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition <?= str_contains($_SERVER['REQUEST_URI'], '/teachers') ? 'bg-blue-50 text-huit-header border-l-4 border-huit-header' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
+                <!-- 3. Phân lịch thông minh -->
+                <a href="/schedules/create" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition <?= str_contains($currentUri, '/schedules/create') ? 'bg-orange-50 text-orange-600 border-l-4 border-orange-500' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
+                    <i class="ti ti-sparkles text-base text-orange-500"></i>
+                    <span>PHÂN LỊCH THÔNG MINH</span>
+                </a>
+
+                <!-- 4. Quản lý danh sách lịch dạy -->
+                <a href="/schedules" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition <?= ($currentUri === '/schedules' || (str_contains($currentUri, '/schedules') && !str_contains($currentUri, '/create') && !str_contains($currentUri, '/weekly'))) ? 'bg-blue-50 text-huit-header border-l-4 border-huit-header' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
+                    <i class="ti ti-list text-base text-slate-500"></i>
+                    <span>QUẢN LÝ LỊCH DẠY</span>
+                </a>
+
+                <!-- 5. Quản lý Giảng viên -->
+                <a href="/teachers" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition <?= str_contains($currentUri, '/teachers') ? 'bg-blue-50 text-huit-header border-l-4 border-huit-header' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
                     <i class="ti ti-users text-base text-slate-500"></i>
                     <span>GIẢNG VIÊN</span>
                 </a>
 
-                <!-- 4. Quản lý Cơ sở đào tạo -->
-                <a href="/branches" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition <?= str_contains($_SERVER['REQUEST_URI'], '/branches') ? 'bg-blue-50 text-huit-header border-l-4 border-huit-header' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
+                <!-- 6. Quản lý Cơ sở đào tạo -->
+                <a href="/branches" class="flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition <?= str_contains($currentUri, '/branches') ? 'bg-blue-50 text-huit-header border-l-4 border-huit-header' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' ?>">
                     <i class="ti ti-building-community text-base text-slate-500"></i>
                     <span>CƠ SỞ ĐÀO TẠO</span>
                 </a>

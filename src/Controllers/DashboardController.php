@@ -11,7 +11,91 @@ use App\Services\ScheduleOptimizerService;
 
 class DashboardController extends Controller
 {
+    /**
+     * TRANG CHỦ DASHBOARD: Tổng quan, Thống kê, Sơ đồ và Biểu đồ phân bổ thông minh
+     */
     public function index(): void
+    {
+        Auth::requireAdmin();
+
+        $branches = Branch::getAll();
+        $teachers = Teacher::getAll();
+        $schedules = Schedule::getAll();
+
+        $totalBranches = count($branches);
+        $totalTeachers = count($teachers);
+        $totalSchedules = count($schedules);
+
+        // 1. Phân bổ theo Cơ sở (Dùng cho Biểu đồ Cột / Bar Chart)
+        $branchChartLabels = [];
+        $branchChartData = [];
+        foreach ($branches as $b) {
+            $branchChartLabels[] = $b['branch_name'];
+            $count = count(array_filter($schedules, fn($s) => (int)$s['branch_id'] === (int)$b['id']));
+            $branchChartData[] = $count;
+        }
+
+        // 2. Phân bổ theo Buổi học (Sáng / Chiều / Tối - Dùng cho Donut Chart)
+        $sessionCount = ['morning' => 0, 'afternoon' => 0, 'evening' => 0];
+        $typeCount = ['practice' => 0, 'theory' => 0];
+
+        foreach ($schedules as $s) {
+            $st = $s['session_time'] ?? Schedule::detectSessionTime($s['shift_or_periods']);
+            if (isset($sessionCount[$st])) {
+                $sessionCount[$st]++;
+            } else {
+                $sessionCount['morning']++;
+            }
+
+            // Phân loại thực hành vs lý thuyết
+            $isPractice = stripos($s['subject_name'], 'thực hành') !== false 
+                       || stripos($s['subject_name'], 'lab') !== false
+                       || stripos($s['subject_name'], 'web') !== false
+                       || stripos($s['subject_name'], 'vi sinh') !== false;
+            if ($isPractice) {
+                $typeCount['practice']++;
+            } else {
+                $typeCount['theory']++;
+            }
+        }
+
+        // 3. Phân bổ theo Thứ trong tuần (Thứ 2 đến Thứ 7, CN)
+        $dayOfWeekDistribution = [2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0, 7 => 0, 8 => 0];
+        foreach ($schedules as $s) {
+            $d = (int)$s['day_of_week'];
+            if (isset($dayOfWeekDistribution[$d])) {
+                $dayOfWeekDistribution[$d]++;
+            }
+        }
+
+        // 4. Danh sách các ca học tiêu biểu gần đây
+        $recentSchedules = array_slice($schedules, 0, 6);
+
+        // 5. Thống kê giảng viên có nhiều ca dạy nhất (Top 5)
+        usort($teachers, fn($a, $b) => (int)$b['schedule_count'] <=> (int)$a['schedule_count']);
+        $topTeachers = array_slice($teachers, 0, 5);
+
+        $this->render('dashboard/index', [
+            'branches' => $branches,
+            'teachers' => $teachers,
+            'totalBranches' => $totalBranches,
+            'totalTeachers' => $totalTeachers,
+            'totalSchedules' => $totalSchedules,
+            'branchChartLabels' => $branchChartLabels,
+            'branchChartData' => $branchChartData,
+            'sessionCount' => $sessionCount,
+            'typeCount' => $typeCount,
+            'dayOfWeekDistribution' => $dayOfWeekDistribution,
+            'recentSchedules' => $recentSchedules,
+            'topTeachers' => $topTeachers,
+            'user' => Auth::user()
+        ]);
+    }
+
+    /**
+     * TRANG LỊCH THEO TUẦN RIÊNG BIỆT: Ma trận Thời khóa biểu tuần theo chuẩn Ảnh 3
+     */
+    public function weekly(): void
     {
         Auth::requireAdmin();
 
@@ -32,7 +116,7 @@ class DashboardController extends Controller
 
         $schedules = Schedule::getAll($filters);
 
-        // Xây dựng ma trận lịch tuần: [day_of_week][shift] => [schedules...]
+        // Xây dựng ma trận lịch tuần
         $timetableGrid = [];
         $shifts = array_keys(ScheduleOptimizerService::SHIFTS);
 
@@ -50,22 +134,9 @@ class DashboardController extends Controller
             }
         }
 
-        // Thống kê phân bổ theo từng cơ sở
-        $branchDistribution = [];
-        foreach ($branches as $branch) {
-            $branchId = (int)$branch['id'];
-            $count = count(array_filter($schedules, fn($item) => (int)$item['branch_id'] === $branchId));
-            $branchDistribution[] = [
-                'name' => $branch['branch_name'],
-                'count' => $count
-            ];
-        }
+        $totalSchedules = count($schedules);
 
-        $totalBranches = count($branches);
-        $totalTeachers = count($teachers);
-        $totalSchedules = Schedule::count();
-
-        $this->render('dashboard/index', [
+        $this->render('dashboard/weekly', [
             'branches' => $branches,
             'teachers' => $teachers,
             'selectedBranchId' => $selectedBranchId,
@@ -73,9 +144,6 @@ class DashboardController extends Controller
             'timetableGrid' => $timetableGrid,
             'shifts' => $shifts,
             'shiftDetails' => ScheduleOptimizerService::SHIFTS,
-            'branchDistribution' => $branchDistribution,
-            'totalBranches' => $totalBranches,
-            'totalTeachers' => $totalTeachers,
             'totalSchedules' => $totalSchedules,
             'user' => Auth::user()
         ]);
