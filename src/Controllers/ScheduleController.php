@@ -18,12 +18,14 @@ class ScheduleController extends Controller
         $branchId = isset($_GET['branch_id']) && $_GET['branch_id'] !== '' ? (int)$_GET['branch_id'] : null;
         $teacherId = isset($_GET['teacher_id']) && $_GET['teacher_id'] !== '' ? (int)$_GET['teacher_id'] : null;
         $dayOfWeek = isset($_GET['day_of_week']) && $_GET['day_of_week'] !== '' ? (int)$_GET['day_of_week'] : null;
+        $classType = trim($_GET['class_type'] ?? '');
         $keyword = trim($_GET['keyword'] ?? '');
 
         $filters = [];
         if ($branchId) $filters['branch_id'] = $branchId;
         if ($teacherId) $filters['teacher_id'] = $teacherId;
         if ($dayOfWeek) $filters['day_of_week'] = $dayOfWeek;
+        if (!empty($classType)) $filters['class_type'] = $classType;
         if (!empty($keyword)) $filters['keyword'] = $keyword;
 
         $schedules = Schedule::getAll($filters);
@@ -38,6 +40,7 @@ class ScheduleController extends Controller
                 'branch_id' => $branchId,
                 'teacher_id' => $teacherId,
                 'day_of_week' => $dayOfWeek,
+                'class_type' => $classType,
                 'keyword' => $keyword
             ],
             'user' => Auth::user()

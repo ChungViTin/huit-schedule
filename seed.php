@@ -84,7 +84,6 @@ $expertises = [
 
 $teacherIds = [];
 
-// Một số giảng viên cố định chuẩn test
 $fixedTeachers = [
     [
         'full_name' => 'TS. Nguyễn Văn An',
@@ -130,7 +129,6 @@ foreach ($fixedTeachers as $ft) {
     ]);
 }
 
-// Sinh thêm 7 giảng viên ngẫu nhiên qua Faker
 for ($i = 6; $i <= 12; $i++) {
     $title = $faker->randomElement(['ThS. ', 'TS. ', 'GVC. ']);
     $name = $title . $faker->lastName() . ' ' . $faker->middleName() . ' ' . $faker->firstName();
@@ -146,108 +144,131 @@ for ($i = 6; $i <= 12; $i++) {
         'password' => $defaultPassword
     ]);
 }
-echo "  -> Đã tạo " . count($teacherIds) . " giảng viên (Mật khẩu: 123456).\n";
+echo "  -> Đã tạo " . count($teacherIds) . " giảng viên.\n";
 
-// 4. Sinh Lịch Dạy Mẫu (Schedules)
-echo "[4/4] Đang phân bổ Lịch Dạy mẫu tối ưu...\n";
-$subjects = [
-    ['name' => 'Lập trình Web PHP & MySQL', 'exp' => 'Công nghệ phần mềm'],
-    ['name' => 'Cơ sở dữ liệu nâng cao', 'exp' => 'Khoa học dữ liệu'],
-    ['name' => 'An toàn và bảo mật hệ thống mạng', 'exp' => 'Mạng máy tính & An toàn thông tin'],
-    ['name' => 'Kỹ thuật chế biến đồ uống', 'exp' => 'Công nghệ thực phẩm'],
-    ['name' => 'Vi sinh học thực phẩm', 'exp' => 'Công nghệ thực phẩm'],
-    ['name' => 'Quản trị Marketing số', 'exp' => 'Quản trị kinh doanh'],
-    ['name' => 'Nhập môn Trí tuệ nhân tạo', 'exp' => 'Khoa học dữ liệu'],
-    ['name' => 'Kỹ thuật lập trình Java', 'exp' => 'Công nghệ phần mềm'],
-    ['name' => 'Thực hành Vi điều khiển', 'exp' => 'Kỹ thuật điện - Điện tử'],
-    ['name' => 'Tiếng Anh giao tiếp chuyên ngành', 'exp' => 'Ngôn ngữ Anh']
+// 4. Sinh Lịch Dạy Mẫu phân chia rõ: Lý thuyết (3 tiết) vs Thực hành (5 tiết)
+echo "[4/4] Đang phân bổ Lịch Dạy mẫu (Lý thuyết 3 tiết & Thực hành 5 tiết)...\n";
+
+$theoryShifts = [
+    'Sáng - Lý thuyết (Tiết 1-3)',
+    'Sáng - Lý thuyết (Tiết 4-6)',
+    'Chiều - Lý thuyết (Tiết 7-9)',
+    'Chiều - Lý thuyết (Tiết 10-12)',
+    'Tối - Lý thuyết (Tiết 13-15)'
 ];
 
-$shifts = array_keys(ScheduleOptimizerService::SHIFTS);
-$rooms = ['A201', 'A202', 'B101', 'B102', 'PM01', 'PM02', 'PM03', 'TN01', 'TN02', 'C104'];
+$practiceShifts = [
+    'Sáng - Thực hành (Tiết 1-5)',
+    'Chiều - Thực hành (Tiết 7-11)',
+    'Tối - Thực hành (Tiết 11-15)'
+];
 
 $schedulesCount = 0;
 
-// Xếp lịch mẫu đảm bảo tính hợp lệ, tối ưu
-// Ví dụ: TS. Nguyễn Văn An dạy tại Cơ sở 1 vào Thứ 2 (Ca 1 & Ca 2 - cùng cơ sở tối ưu)
+// 1. Thực hành 5 tiết: Lập trình Web PHP (Thứ 2, Sáng 1-5 tại Cơ sở chính)
 Schedule::create([
     'teacher_id' => $teacherIds[0],
     'branch_id' => $branchIds[0],
-    'subject_name' => 'Lập trình Web PHP & MySQL',
+    'subject_name' => 'Thực hành Lập trình Web PHP',
     'room' => 'PM01',
     'day_of_week' => 2,
-    'shift_or_periods' => $shifts[0], // Ca 1
-    'notes' => 'Lớp thực hành máy tính phòng Lab'
+    'shift_or_periods' => 'Sáng - Thực hành (Tiết 1-5)',
+    'class_type' => 'practice',
+    'notes' => 'Thực hành phòng máy tính 5 tiết'
 ]);
 $schedulesCount++;
 
+// 2. Lý thuyết 3 tiết: Kỹ thuật lập trình Java (Thứ 2, Chiều 7-9 cùng cơ sở chính -> Tối ưu di chuyển)
 Schedule::create([
     'teacher_id' => $teacherIds[0],
     'branch_id' => $branchIds[0],
     'subject_name' => 'Kỹ thuật lập trình Java',
-    'room' => 'PM01',
+    'room' => 'B201',
     'day_of_week' => 2,
-    'shift_or_periods' => $shifts[1], // Ca 2 cùng phòng, cùng cơ sở -> CỰC KỲ TỐI ƯU
-    'notes' => 'Lớp lý thuyết kết hợp bài tập'
+    'shift_or_periods' => 'Chiều - Lý thuyết (Tiết 7-9)',
+    'class_type' => 'theory',
+    'notes' => 'Lý thuyết phòng học chuyên đề'
 ]);
 $schedulesCount++;
 
-// ThS. Trần Thị Bích dạy tại Cơ sở 3 (Trung tâm TN) vào Thứ 3 (Ca 3 & Ca 4)
+// 3. Thực hành 5 tiết: Kỹ thuật chế biến đồ uống (Thứ 3, Sáng 1-5 tại TT Thí nghiệm)
 Schedule::create([
     'teacher_id' => $teacherIds[1],
     'branch_id' => $branchIds[2],
-    'subject_name' => 'Kỹ thuật chế biến đồ uống',
+    'subject_name' => 'Thực hành chế biến đồ uống',
     'room' => 'TN01',
     'day_of_week' => 3,
-    'shift_or_periods' => $shifts[2], // Ca 3
-    'notes' => 'Thực hành tại xưởng thí nghiệm'
+    'shift_or_periods' => 'Sáng - Thực hành (Tiết 1-5)',
+    'class_type' => 'practice',
+    'notes' => 'Thực hành tại xưởng thí nghiệm 5 tiết'
 ]);
 $schedulesCount++;
 
+// 4. Lý thuyết 3 tiết: Vi sinh học thực phẩm (Thứ 3, Chiều 7-9 tại TT Thí nghiệm)
 Schedule::create([
     'teacher_id' => $teacherIds[1],
     'branch_id' => $branchIds[2],
     'subject_name' => 'Vi sinh học thực phẩm',
     'room' => 'TN02',
     'day_of_week' => 3,
-    'shift_or_periods' => $shifts[3], // Ca 4
-    'notes' => 'Kiểm nghiệm mẫu phẩm'
+    'shift_or_periods' => 'Chiều - Lý thuyết (Tiết 7-9)',
+    'class_type' => 'theory',
+    'notes' => 'Lý thuyết vi sinh'
 ]);
 $schedulesCount++;
 
-// PGS.TS. Lê Hoàng Cường dạy tại Cơ sở chính vào Thứ 4 (Ca 1) và Thứ 6 (Ca 3)
+// 5. Lý thuyết 3 tiết: An toàn mạng (Thứ 4, Sáng 1-3 tại Cơ sở 1)
 Schedule::create([
     'teacher_id' => $teacherIds[2],
     'branch_id' => $branchIds[0],
     'subject_name' => 'An toàn và bảo mật hệ thống mạng',
-    'room' => 'B101',
+    'room' => 'A201',
     'day_of_week' => 4,
-    'shift_or_periods' => $shifts[0],
-    'notes' => 'Phòng máy lạnh có máy chiếu'
+    'shift_or_periods' => 'Sáng - Lý thuyết (Tiết 1-3)',
+    'class_type' => 'theory',
+    'notes' => 'Lý thuyết an toàn thông tin'
 ]);
 $schedulesCount++;
 
+// 6. Thực hành 5 tiết: Thực hành Mạng máy tính (Thứ 4, Chiều 7-11 tại Cơ sở 1)
 Schedule::create([
     'teacher_id' => $teacherIds[2],
-    'branch_id' => $branchIds[1],
-    'subject_name' => 'An toàn và bảo mật hệ thống mạng',
-    'room' => 'A201',
-    'day_of_week' => 6,
-    'shift_or_periods' => $shifts[2],
-    'notes' => 'Cơ sở 2 Tân Bình'
+    'branch_id' => $branchIds[0],
+    'subject_name' => 'Thực hành Mạng máy tính',
+    'room' => 'PM02',
+    'day_of_week' => 4,
+    'shift_or_periods' => 'Chiều - Thực hành (Tiết 7-11)',
+    'class_type' => 'practice',
+    'notes' => 'Thực hành cấu hình router/switch'
 ]);
 $schedulesCount++;
 
-// Sinh thêm 12 lịch dạy ngẫu nhiên nhưng kiểm tra xung đột để luôn hợp lệ
+// Sinh thêm 12 lịch kết hợp lý thuyết và thực hành ngẫu nhiên
+$otherSubjects = [
+    ['name' => 'Cơ sở dữ liệu nâng cao', 'type' => 'theory', 'exp' => 'Khoa học dữ liệu'],
+    ['name' => 'Thực hành Khoa học dữ liệu & Python', 'type' => 'practice', 'exp' => 'Khoa học dữ liệu'],
+    ['name' => 'Quản trị Marketing số', 'type' => 'theory', 'exp' => 'Quản trị kinh doanh'],
+    ['name' => 'Thực hành Vi điều khiển', 'type' => 'practice', 'exp' => 'Kỹ thuật điện - Điện tử'],
+    ['name' => 'Tiếng Anh giao tiếp chuyên ngành', 'type' => 'theory', 'exp' => 'Ngôn ngữ Anh'],
+    ['name' => 'Kiểm thử phần mềm tự động', 'type' => 'practice', 'exp' => 'Công nghệ phần mềm'],
+    ['name' => 'Quản trị chuỗi cung ứng thực phẩm', 'type' => 'theory', 'exp' => 'Công nghệ thực phẩm'],
+    ['name' => 'Điện toán đám mây Cloud Computing', 'type' => 'theory', 'exp' => 'Công nghệ thông tin']
+];
+
+$rooms = ['A201', 'A202', 'B101', 'B102', 'PM01', 'PM02', 'PM03', 'TN01', 'TN02', 'C104'];
+
 $attempts = 0;
 while ($schedulesCount < 18 && $attempts < 100) {
     $attempts++;
+    $sub = $faker->randomElement($otherSubjects);
     $teacherId = $faker->randomElement($teacherIds);
     $branchId = $faker->randomElement($branchIds);
-    $sub = $faker->randomElement($subjects);
     $day = $faker->numberBetween(2, 7);
-    $shift = $faker->randomElement($shifts);
     $room = $faker->randomElement($rooms);
+
+    $shift = ($sub['type'] === 'practice') 
+        ? $faker->randomElement($practiceShifts) 
+        : $faker->randomElement($theoryShifts);
 
     $check = ScheduleOptimizerService::checkConflicts($teacherId, $branchId, $room, $day, $shift);
     if (!$check['has_conflict']) {
@@ -258,13 +279,12 @@ while ($schedulesCount < 18 && $attempts < 100) {
             'room' => $room,
             'day_of_week' => $day,
             'shift_or_periods' => $shift,
-            'notes' => 'Phân lịch tự động mẫu'
+            'class_type' => $sub['type'],
+            'notes' => 'Phân bổ mẫu ' . ($sub['type'] === 'practice' ? '5 tiết' : '3 tiết')
         ]);
         $schedulesCount++;
     }
 }
 
-echo "  -> Đã tạo {$schedulesCount} ca lịch dạy mẫu hoàn toàn hợp lệ.\n";
-echo "=== HOÀN TẤT SEED DỮ LIỆU THÀNH CÔNG! ===\n";
-echo "Đăng nhập Admin: admin / admin123\n";
-echo "Đăng nhập Giảng viên: nguyenvana@huit.edu.vn / 123456\n";
+echo "  -> Đã tạo {$schedulesCount} ca lịch dạy (gồm cả Lý thuyết 3 tiết & Thực hành 5 tiết).\n";
+echo "=== HOÀN TẤT SEED DỮ LIỆU! ===\n";

@@ -87,14 +87,19 @@ $dayNames = [
                             Ca học / Tiết học <span class="text-red-500">*</span>
                         </label>
                         <select id="shift_or_periods" name="shift_or_periods" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-huit-blue">
-                            <option value="">-- Chọn Ca Học --</option>
-                            <?php foreach ($shifts as $shift): 
-                                $info = $shiftDetails[$shift] ?? null;
-                            ?>
-                                <option value="<?= htmlspecialchars($shift) ?>">
-                                    <?= htmlspecialchars($shift) ?> <?= $info ? '(' . $info['time'] . ')' : '' ?>
-                                </option>
-                            <?php endforeach; ?>
+                            <option value="">-- Chọn Ca Học (Lý thuyết / Thực hành) --</option>
+                            <optgroup label="📘 Lý thuyết (3 tiết)">
+                                <option value="Sáng - Lý thuyết (Tiết 1-3)">Sáng - Lý thuyết (Tiết 1-3) [07:00 - 09:30]</option>
+                                <option value="Sáng - Lý thuyết (Tiết 4-6)">Sáng - Lý thuyết (Tiết 4-6) [09:45 - 12:15]</option>
+                                <option value="Chiều - Lý thuyết (Tiết 7-9)">Chiều - Lý thuyết (Tiết 7-9) [13:00 - 15:30]</option>
+                                <option value="Chiều - Lý thuyết (Tiết 10-12)">Chiều - Lý thuyết (Tiết 10-12) [15:45 - 18:15]</option>
+                                <option value="Tối - Lý thuyết (Tiết 13-15)">Tối - Lý thuyết (Tiết 13-15) [18:30 - 21:00]</option>
+                            </optgroup>
+                            <optgroup label="🧪 Thực hành phòng máy / xưởng (5 tiết)">
+                                <option value="Sáng - Thực hành (Tiết 1-5)">Sáng - Thực hành (Tiết 1-5) [07:00 - 11:30]</option>
+                                <option value="Chiều - Thực hành (Tiết 7-11)">Chiều - Thực hành (Tiết 7-11) [12:30 - 17:00]</option>
+                                <option value="Tối - Thực hành (Tiết 11-15)">Tối - Thực hành (Tiết 11-15) [17:15 - 21:45]</option>
+                            </optgroup>
                         </select>
                     </div>
                 </div>

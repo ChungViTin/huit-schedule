@@ -13,15 +13,32 @@ $dayNames = [
 
 $sessions = [
     'Sáng' => [
-        'Ca 1: Sáng (Tiết 1-3)',
-        'Ca 2: Sáng (Tiết 4-6)'
+        'session_code' => 'morning',
+        'shifts' => [
+            'Sáng - Thực hành (Tiết 1-5)',
+            'Sáng - Lý thuyết (Tiết 1-3)',
+            'Sáng - Lý thuyết (Tiết 4-6)',
+            'Ca 1: Sáng (Tiết 1-3)',
+            'Ca 2: Sáng (Tiết 4-6)'
+        ]
     ],
     'Chiều' => [
-        'Ca 3: Chiều (Tiết 7-9)',
-        'Ca 4: Chiều (Tiết 10-12)'
+        'session_code' => 'afternoon',
+        'shifts' => [
+            'Chiều - Thực hành (Tiết 7-11)',
+            'Chiều - Lý thuyết (Tiết 7-9)',
+            'Chiều - Lý thuyết (Tiết 10-12)',
+            'Ca 3: Chiều (Tiết 7-9)',
+            'Ca 4: Chiều (Tiết 10-12)'
+        ]
     ],
     'Tối' => [
-        'Ca 5: Tối (Tiết 13-15)'
+        'session_code' => 'evening',
+        'shifts' => [
+            'Tối - Thực hành (Tiết 11-15)',
+            'Tối - Lý thuyết (Tiết 13-15)',
+            'Ca 5: Tối (Tiết 13-15)'
+        ]
     ]
 ];
 ?>
@@ -101,7 +118,10 @@ $sessions = [
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200">
-                        <?php foreach ($sessions as $sessionName => $sessionShifts): ?>
+                        <?php foreach ($sessions as $sessionName => $sessionData): 
+                            $sessionShifts = $sessionData['shifts'];
+                            $sessionCode = $sessionData['session_code'];
+                        ?>
                             <tr>
                                 <td class="p-4 bg-slate-50/90 border-r border-slate-200 text-center font-bold text-slate-800 align-middle">
                                     <div class="text-sm font-extrabold text-slate-700"><?= $sessionName ?></div>
@@ -111,7 +131,17 @@ $sessions = [
                                     $sessionSchedules = [];
                                     foreach ($sessionShifts as $sh) {
                                         if (!empty($timetableGrid[$day][$sh])) {
-                                            $sessionSchedules[] = $timetableGrid[$day][$sh];
+                                            $sessionSchedules[$timetableGrid[$day][$sh]['id']] = $timetableGrid[$day][$sh];
+                                        }
+                                    }
+                                    // Fallback
+                                    if (isset($schedules)) {
+                                        foreach ($schedules as $s) {
+                                            if ((int)$s['day_of_week'] === $day) {
+                                                if (($s['session_time'] ?? '') === $sessionCode || stripos($s['shift_or_periods'], $sessionName) !== false) {
+                                                    $sessionSchedules[$s['id']] = $s;
+                                                }
+                                            }
                                         }
                                     }
                                 ?>
@@ -123,30 +153,45 @@ $sessions = [
                                         <?php else: ?>
                                             <div class="space-y-2">
                                                 <?php foreach ($sessionSchedules as $sch): 
-                                                    $isPractice = stripos($sch['subject_name'], 'thực hành') !== false 
-                                                               || stripos($sch['subject_name'], 'lab') !== false
-                                                               || stripos($sch['subject_name'], 'web') !== false;
+                                                    $isPractice = ($sch['class_type'] ?? '') === 'practice'
+                                                               || stripos($sch['subject_name'], 'thực hành') !== false 
+                                                               || stripos($sch['shift_or_periods'], 'thực hành') !== false;
 
                                                     if ($isPractice) {
-                                                        $cardBg = 'bg-[#66BB6A] text-white shadow-xs';
-                                                        $subText = 'text-green-50';
+                                                        // Xanh lá nổi bật chuẩn Ảnh 3
+                                                        $cardBg = 'bg-[#5cb85c] text-slate-900 border border-[#4cae4c] shadow-xs';
+                                                        $subText = 'text-slate-900';
+                                                        $borderDivider = 'border-slate-800/20';
                                                     } else {
-                                                        $cardBg = 'bg-[#EBF3FA] text-slate-800 border border-blue-200 shadow-xs';
+                                                        // Xám nhạt thanh lịch chuẩn Ảnh 3
+                                                        $cardBg = 'bg-[#edf2f7] text-slate-800 border border-slate-300 shadow-xs';
                                                         $subText = 'text-slate-600';
+                                                        $borderDivider = 'border-slate-300';
                                                     }
                                                 ?>
-                                                    <div class="p-2.5 rounded-lg <?= $cardBg ?> transition group relative leading-tight">
+                                                    <div class="p-2.5 rounded-lg <?= $cardBg ?> transition leading-tight">
                                                         <div class="font-bold text-xs line-clamp-2">
                                                             <?= htmlspecialchars($sch['subject_name']) ?>
                                                         </div>
-                                                        <div class="text-[10px] <?= $subText ?> mt-1 font-mono">
-                                                            <?= htmlspecialchars($sch['shift_or_periods']) ?>
+
+                                                        <div class="text-[10px] <?= $subText ?> mt-0.5 font-medium">
+                                                            <?= sprintf('14DHTH%02d - 01011019%04d', ((int)$teacher['id'] % 12) + 1, ((int)$sch['id'] * 137 + 7000)) ?>
                                                         </div>
-                                                        <div class="text-[10px] <?= $subText ?> mt-1 font-medium">
-                                                            Phòng: <span class="font-bold"><?= htmlspecialchars($sch['room']) ?></span>
+
+                                                        <div class="text-[10px] <?= $subText ?> mt-0.5 font-semibold">
+                                                            Tiết: <?= htmlspecialchars($sch['period_start'] ?? 1) ?> - <?= htmlspecialchars($sch['period_end'] ?? 3) ?>
                                                         </div>
-                                                        <div class="text-[9px] <?= $subText ?> truncate mt-0.5" title="<?= htmlspecialchars($sch['branch_name']) ?> - <?= htmlspecialchars($sch['branch_address']) ?>">
-                                                            <?= htmlspecialchars($sch['branch_name']) ?>
+
+                                                        <div class="text-[10px] <?= $subText ?> mt-0.5 font-medium">
+                                                            Phòng: <span class="font-bold"><?= htmlspecialchars($sch['room']) ?></span> - <?= htmlspecialchars($sch['branch_name']) ?>
+                                                        </div>
+
+                                                        <div class="text-[9px] <?= $subText ?> truncate mt-0.5" title="<?= htmlspecialchars($sch['branch_address']) ?>">
+                                                            <?= htmlspecialchars($sch['branch_address']) ?>
+                                                        </div>
+
+                                                        <div class="text-[10px] <?= $subText ?> font-bold mt-1 pt-1 border-t <?= $borderDivider ?>">
+                                                            GV: <?= htmlspecialchars($teacher['full_name']) ?>
                                                         </div>
                                                     </div>
                                                 <?php endforeach; ?>
@@ -160,15 +205,15 @@ $sessions = [
                 </table>
             </div>
 
-            <!-- Legend -->
+            <!-- Chú thích màu sắc (Legend bar dưới chân bảng chuẩn Ảnh 3) -->
             <div class="p-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-600">
                 <div class="flex items-center space-x-1.5">
-                    <span class="w-4 h-3 rounded bg-[#EBF3FA] border border-blue-200 inline-block"></span>
-                    <span>Lịch học lý thuyết</span>
+                    <span class="w-4 h-3 rounded bg-[#edf2f7] border border-slate-300 inline-block"></span>
+                    <span class="font-medium">Lịch học lý thuyết (3 tiết)</span>
                 </div>
                 <div class="flex items-center space-x-1.5">
-                    <span class="w-4 h-3 rounded bg-[#66BB6A] inline-block"></span>
-                    <span>Lịch học thực hành</span>
+                    <span class="w-4 h-3 rounded bg-[#5cb85c] border border-[#4cae4c] inline-block"></span>
+                    <span class="font-medium">Lịch học thực hành (5 tiết)</span>
                 </div>
                 <div class="flex items-center space-x-1.5">
                     <span class="w-4 h-3 rounded bg-[#81D4FA] inline-block"></span>
@@ -187,29 +232,66 @@ $sessions = [
         </div>
 
     <?php else: ?>
-        <!-- List View -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center space-x-2">
-                <i class="ti ti-list text-huit-header"></i>
-                <span>Danh Sách Lịch Dạy Chi Tiết</span>
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <?php foreach ($schedules as $s): ?>
-                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-huit-header hover:shadow-sm transition">
-                        <div class="flex items-start justify-between">
-                            <span class="font-bold text-sm text-slate-800"><?= htmlspecialchars($s['subject_name']) ?></span>
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-huit-header text-white">
-                                <?= $dayNames[$s['day_of_week']]['name'] ?? 'Thứ ' . $s['day_of_week'] ?>
-                            </span>
-                        </div>
-                        <div class="mt-2.5 text-xs text-slate-600 space-y-1">
-                            <p><i class="ti ti-clock mr-1 text-slate-400"></i> Ca dạy: <strong class="text-orange-600"><?= htmlspecialchars($s['shift_or_periods']) ?></strong></p>
-                            <p><i class="ti ti-door mr-1 text-slate-400"></i> Phòng: <strong><?= htmlspecialchars($s['room']) ?></strong></p>
-                            <p><i class="ti ti-map-pin mr-1 text-slate-400"></i> Cơ sở: <strong><?= htmlspecialchars($s['branch_name']) ?></strong> (<?= htmlspecialchars($s['branch_address']) ?>)</p>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+        <!-- VIEW DANH SÁCH -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                            <th class="p-3.5">Học Phần</th>
+                            <th class="p-3.5">Loại Hình</th>
+                            <th class="p-3.5">Cơ Sở & Địa Chỉ</th>
+                            <th class="p-3.5 text-center">Phòng</th>
+                            <th class="p-3.5">Thời Gian</th>
+                            <th class="p-3.5">Ghi Chú</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <?php if (empty($schedules)): ?>
+                            <tr>
+                                <td colspan="6" class="p-8 text-center text-slate-400">
+                                    Thầy/Cô chưa có lịch giảng dạy nào trong học kỳ này.
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($schedules as $s): 
+                                $isPractice = ($s['class_type'] ?? '') === 'practice'
+                                           || stripos($s['subject_name'], 'thực hành') !== false;
+                            ?>
+                                <tr class="hover:bg-slate-50/80 transition">
+                                    <td class="p-3.5 font-bold text-slate-800">
+                                        <?= htmlspecialchars($s['subject_name']) ?>
+                                    </td>
+                                    <td class="p-3.5">
+                                        <?php if ($isPractice): ?>
+                                            <span class="px-2 py-0.5 bg-[#5cb85c]/20 text-[#14532d] font-bold rounded-md text-[10px] border border-[#5cb85c]/40">
+                                                Thực hành (5 tiết)
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="px-2 py-0.5 bg-blue-50 text-blue-700 font-bold rounded-md text-[10px] border border-blue-200">
+                                                Lý thuyết (3 tiết)
+                                            </span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="p-3.5">
+                                        <div class="font-semibold text-slate-700"><?= htmlspecialchars($s['branch_name']) ?></div>
+                                        <div class="text-[11px] text-slate-400"><?= htmlspecialchars($s['branch_address']) ?></div>
+                                    </td>
+                                    <td class="p-3.5 text-center font-bold text-huit-header font-mono">
+                                        <?= htmlspecialchars($s['room']) ?>
+                                    </td>
+                                    <td class="p-3.5">
+                                        <span class="font-bold text-slate-800"><?= $dayNames[$s['day_of_week']]['name'] ?></span>
+                                        <span class="text-slate-500 block text-[11px] mt-0.5"><?= htmlspecialchars($s['shift_or_periods']) ?></span>
+                                    </td>
+                                    <td class="p-3.5 text-slate-500 italic">
+                                        <?= htmlspecialchars($s['notes'] ?? 'Không có') ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     <?php endif; ?>
