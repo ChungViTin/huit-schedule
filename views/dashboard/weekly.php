@@ -83,10 +83,11 @@ $sessions = [
                     </button>
                 </div>
 
-                <a href="/schedules/create" class="px-3 py-1.5 bg-huit-orange hover:bg-huit-orangeHover text-white font-bold rounded-lg shadow-xs transition flex items-center space-x-1">
+                <!-- Nút Phân lịch Pop-up -->
+                <button type="button" onclick="openCreateScheduleModal()" class="px-3 py-1.5 bg-huit-orange hover:bg-huit-orangeHover text-white font-bold rounded-lg shadow-xs transition flex items-center space-x-1">
                     <i class="ti ti-plus"></i>
-                    <span>Phân lịch mới</span>
-                </a>
+                    <span>Phân lịch mới (Pop-up)</span>
+                </button>
             </div>
 
         </div>
@@ -180,11 +181,9 @@ $sessions = [
                                                            || stripos($sch['subject_name'], 'vi sinh') !== false;
 
                                                 if ($isPractice) {
-                                                    // Khối xanh lá HUIT (chuẩn Ảnh 3)
                                                     $cardBg = 'bg-[#66BB6A] text-white shadow-xs';
                                                     $subText = 'text-green-50';
                                                 } else {
-                                                    // Khối lý thuyết pastel (chuẩn Ảnh 3)
                                                     $cardBg = 'bg-[#EBF3FA] text-slate-800 border border-blue-200 shadow-xs';
                                                     $subText = 'text-slate-600';
                                                 }
@@ -256,3 +255,231 @@ $sessions = [
     </div>
 
 </div>
+
+<!-- MODAL POP-UP: THÊM LỊCH DẠY THÔNG MINH NGAY TRÊN TRANG TUẦN -->
+<div id="createScheduleModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[90vh] overflow-y-auto transform transition-all scale-95 duration-200" id="createScheduleModalBox">
+        
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 sticky top-0 bg-white z-10">
+            <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                <i class="ti ti-sparkles text-orange-500 text-lg"></i>
+                <span>Phân Lịch Giảng Dạy Mới (Hỗ trợ Gợi ý Thông Minh)</span>
+            </h3>
+            <button type="button" onclick="closeCreateScheduleModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                <i class="ti ti-x text-lg"></i>
+            </button>
+        </div>
+
+        <div class="p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Cột trái: Form nhập liệu -->
+            <form action="/schedules" method="POST" class="lg:col-span-7 space-y-3.5">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Cơ sở <span class="text-red-500">*</span></label>
+                    <select id="modal_branch_id" name="branch_id" required class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-huit-header">
+                        <option value="">-- Chọn Cơ Sở --</option>
+                        <?php foreach ($branches as $b): ?>
+                            <option value="<?= $b['id'] ?>"><?= htmlspecialchars($b['branch_name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Môn học / Học phần <span class="text-red-500">*</span></label>
+                    <input type="text" id="modal_subject_name" name="subject_name" required placeholder="Lập trình Web PHP, An toàn mạng..." class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-huit-header">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Thứ <span class="text-red-500">*</span></label>
+                        <select id="modal_day_of_week" name="day_of_week" required class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-huit-header">
+                            <?php for ($d = 2; $d <= 8; $d++): ?>
+                                <option value="<?= $d ?>"><?= $dayNames[$d]['name'] ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Ca học <span class="text-red-500">*</span></label>
+                        <select id="modal_shift" name="shift_or_periods" required class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-huit-header">
+                            <option value="">-- Chọn Ca --</option>
+                            <?php foreach ($shifts as $sh): ?>
+                                <option value="<?= htmlspecialchars($sh) ?>"><?= htmlspecialchars($sh) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Phòng học <span class="text-red-500">*</span></label>
+                        <input type="text" id="modal_room" name="room" required placeholder="A201, PM01..." class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-huit-header">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Giảng viên <span class="text-red-500">*</span></label>
+                        <select id="modal_teacher_id" name="teacher_id" required class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-huit-header">
+                            <option value="">-- Chọn Giảng Viên --</option>
+                            <?php foreach ($teachers as $t): ?>
+                                <option value="<?= $t['id'] ?>"><?= htmlspecialchars($t['full_name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Ghi chú</label>
+                    <textarea name="notes" rows="2" placeholder="Ghi chú thêm..." class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-800 focus:ring-2 focus:ring-huit-header"></textarea>
+                </div>
+
+                <div id="modalConflictBox" class="hidden p-3 rounded-xl text-xs space-y-1"></div>
+
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-end space-x-2">
+                    <button type="button" onclick="closeCreateScheduleModal()" class="px-4 py-2 border border-slate-200 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50">Hủy</button>
+                    <button type="submit" id="modalSubmitBtn" class="px-5 py-2 bg-huit-header hover:bg-blue-800 text-white text-xs font-bold rounded-xl shadow-xs">Xác Nhận Lưu Lịch</button>
+                </div>
+            </form>
+
+            <!-- Cột phải: Trợ lý Gợi ý Giảng Viên -->
+            <div class="lg:col-span-5 bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-slate-700 flex items-center">
+                            <i class="ti ti-bulb text-amber-500 mr-1"></i> Gợi Ý Phù Hợp:
+                        </span>
+                        <span id="modalLoading" class="hidden text-[10px] text-huit-header font-bold animate-pulse">Đang tìm...</span>
+                    </div>
+                    <div id="modalSuggestionList" class="space-y-2 max-h-[300px] overflow-y-auto text-xs text-slate-400 text-center py-4">
+                        Chọn Cơ sở, Ca học và Môn học để nhận gợi ý giảng viên tối ưu di chuyển.
+                    </div>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-2 border-t border-slate-200 pt-2">
+                    Thuật toán tự động ưu tiên giảng viên đang có mặt tại cùng cơ sở trong ngày.
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+function openCreateScheduleModal() {
+    const modal = document.getElementById('createScheduleModal');
+    const box = document.getElementById('createScheduleModalBox');
+    modal.classList.remove('hidden');
+    setTimeout(() => box.classList.remove('scale-95'), 10);
+}
+
+function closeCreateScheduleModal() {
+    const modal = document.getElementById('createScheduleModal');
+    const box = document.getElementById('createScheduleModalBox');
+    box.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 150);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const branchSel = document.getElementById('modal_branch_id');
+    const subInput = document.getElementById('modal_subject_name');
+    const daySel = document.getElementById('modal_day_of_week');
+    const shiftSel = document.getElementById('modal_shift');
+    const roomInput = document.getElementById('modal_room');
+    const teacherSel = document.getElementById('modal_teacher_id');
+    const sugList = document.getElementById('modalSuggestionList');
+    const loading = document.getElementById('modalLoading');
+    const conflictBox = document.getElementById('modalConflictBox');
+    const submitBtn = document.getElementById('modalSubmitBtn');
+
+    let timer = null;
+    function triggerSuggest() {
+        clearTimeout(timer);
+        timer = setTimeout(fetchSuggestions, 300);
+    }
+
+    branchSel.addEventListener('change', triggerSuggest);
+    subInput.addEventListener('input', triggerSuggest);
+    daySel.addEventListener('change', triggerSuggest);
+    shiftSel.addEventListener('change', triggerSuggest);
+
+    function fetchSuggestions() {
+        const bId = branchSel.value;
+        const sub = subInput.value.trim();
+        const d = daySel.value;
+        const sh = shiftSel.value;
+
+        if (!bId || !sh) return;
+        loading.classList.remove('hidden');
+
+        const params = new URLSearchParams({ branch_id: bId, subject_name: sub, day_of_week: d, shift: sh });
+        fetch('/api/suggest-teachers?' + params.toString())
+            .then(r => r.json())
+            .then(res => {
+                loading.classList.add('hidden');
+                if (res.success && res.data.length > 0) {
+                    let html = '';
+                    res.data.slice(0, 4).forEach(item => {
+                        const t = item.teacher;
+                        html += `
+                            <div class="p-2 bg-white rounded-lg border border-slate-200 flex items-center justify-between text-left">
+                                <div class="truncate mr-2">
+                                    <div class="font-bold text-slate-800 text-[11px] truncate">${t.full_name}</div>
+                                    <span class="text-[9px] px-1.5 py-0.2 rounded ${item.badge_class}">${item.badge_text || 'Khả dụng'}</span>
+                                </div>
+                                ${item.is_available ? `
+                                    <button type="button" onclick="document.getElementById('modal_teacher_id').value=${t.id}" class="px-2 py-1 bg-huit-header text-white rounded text-[10px] font-bold">Chọn</button>
+                                ` : `<span class="text-[9px] text-red-500 font-bold">Bận</span>`}
+                            </div>
+                        `;
+                    });
+                    sugList.innerHTML = html;
+                } else {
+                    sugList.innerHTML = '<div class="text-center py-2">Không có gợi ý.</div>';
+                }
+            })
+            .catch(() => loading.classList.add('hidden'));
+    }
+
+    function checkConflict() {
+        const tId = teacherSel.value;
+        const bId = branchSel.value;
+        const rm = roomInput.value.trim();
+        const d = daySel.value;
+        const sh = shiftSel.value;
+
+        if (!tId || !bId || !rm || !d || !sh) {
+            conflictBox.classList.add('hidden');
+            submitBtn.disabled = false;
+            return;
+        }
+
+        const params = new URLSearchParams({ teacher_id: tId, branch_id: bId, room: rm, day_of_week: d, shift: sh });
+        fetch('/api/check-conflicts?' + params.toString())
+            .then(r => r.json())
+            .then(data => {
+                if (data.has_conflict) {
+                    conflictBox.className = 'p-2.5 rounded-xl text-[11px] bg-red-50 border border-red-200 text-red-800';
+                    conflictBox.innerHTML = `<strong>Xung đột:</strong> ${data.conflicts.join(', ')}`;
+                    conflictBox.classList.remove('hidden');
+                    submitBtn.disabled = true;
+                } else if (data.has_warning) {
+                    conflictBox.className = 'p-2.5 rounded-xl text-[11px] bg-amber-50 border border-amber-200 text-amber-800';
+                    conflictBox.innerHTML = `<strong>Cảnh báo:</strong> ${data.warnings.join(', ')}`;
+                    conflictBox.classList.remove('hidden');
+                    submitBtn.disabled = false;
+                } else {
+                    conflictBox.classList.add('hidden');
+                    submitBtn.disabled = false;
+                }
+            });
+    }
+
+    roomInput.addEventListener('input', checkConflict);
+    teacherSel.addEventListener('change', checkConflict);
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeCreateScheduleModal();
+    }
+});
+</script>
